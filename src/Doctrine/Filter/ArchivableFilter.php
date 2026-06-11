@@ -16,7 +16,7 @@ final class ArchivableFilter extends SQLFilter
             return '';
         }
 
-        $column = $targetEntity->getColumnName('archivedAt');
+        $column = $this->getConnection()->quoteIdentifier($targetEntity->getColumnName('archivedAt'));
 
         return sprintf('%s.%s IS NULL', $targetTableAlias, $column);
     }

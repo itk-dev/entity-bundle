@@ -41,8 +41,15 @@ final readonly class BlameableListener
             }
         }
 
+        if (null === $user) {
+            return;
+        }
+
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             if (!$entity instanceof BlameableInterface) {
+                continue;
+            }
+            if ($entity->getModifiedBy() === $user) {
                 continue;
             }
             $entity->setModifiedBy($user);

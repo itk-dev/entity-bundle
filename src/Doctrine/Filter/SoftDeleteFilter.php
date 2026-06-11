@@ -16,7 +16,7 @@ final class SoftDeleteFilter extends SQLFilter
             return '';
         }
 
-        $column = $targetEntity->getColumnName('deletedAt');
+        $column = $this->getConnection()->quoteIdentifier($targetEntity->getColumnName('deletedAt'));
 
         return sprintf('%s.%s IS NULL', $targetTableAlias, $column);
     }

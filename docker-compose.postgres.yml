@@ -9,11 +9,11 @@ services:
     image: postgres:16
     ports: !reset []
     environment: !override
-      POSTGRES_DB: app_bundle_test
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: "!ChangeMe!"
+      POSTGRES_DB: db
+      POSTGRES_USER: db
+      POSTGRES_PASSWORD: db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app -d app_bundle_test"]
+      test: ["CMD-SHELL", "pg_isready -U db -d db"]
       start_period: 10s
       interval: 10s
       timeout: 5s
@@ -29,7 +29,7 @@ services:
       args:
         PHP_FPM_IMAGE: ${PHP_FPM_IMAGE:-itkdev/php8.4-fpm:latest}
     environment:
-      - DATABASE_URL=postgresql://app:!ChangeMe!@database:5432/app_bundle_test?serverVersion=16&charset=utf8
+      - DATABASE_URL=postgresql://db:db@database:5432/db?serverVersion=16&charset=utf8
 
 volumes:
   postgres-data:

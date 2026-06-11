@@ -98,6 +98,82 @@ final class AbstractITKDevEntityIntegrationTest extends IntegrationTestCase
         self::assertNull($entity->getModifiedBy());
     }
 
+    public function testBlameablePreservesModifiedByWhenUpdateRunsLoggedOut(): void
+    {
+        $alice = new TestUser();
+        $this->em->persist($alice);
+        $this->em->flush();
+
+        $this->loginAs($alice);
+
+        $entity = new FixtureEntity();
+        $this->em->persist($entity);
+        $this->em->flush();
+        self::assertSame($alice->getId(), $this->blameId($entity->getModifiedBy()));
+
+        // Mimic a worker / cron flush: no security token.
+        $this->logout();
+        $entity->setLabel('mutated-by-worker');
+        $this->em->flush();
+
+        self::assertSame(
+            $alice->getId(),
+            $this->blameId($entity->getModifiedBy()),
+            'modifiedBy must not be wiped when an update flushes without an authenticated user',
+        );
+    }
+
+    public function testSoftDeleteAndArchivableFiltersCompose(): void
+    {
+        $live = new FixtureEntity();
+        $live->setLabel('live');
+
+        $archivedOnly = new FixtureEntity();
+        $archivedOnly->setLabel('archived');
+        $archivedOnly->archive(new \DateTimeImmutable('2025-01-01'));
+
+        $softDeletedOnly = new FixtureEntity();
+        $softDeletedOnly->setLabel('soft-deleted');
+
+        $both = new FixtureEntity();
+        $both->setLabel('both');
+        $both->archive(new \DateTimeImmutable('2025-01-01'));
+
+        $this->em->persist($live);
+        $this->em->persist($archivedOnly);
+        $this->em->persist($softDeletedOnly);
+        $this->em->persist($both);
+        $this->em->flush();
+
+        $this->em->remove($softDeletedOnly);
+        $this->em->remove($both);
+        $this->em->flush();
+        $this->em->clear();
+
+        // soft_delete on (default), archivable off (default) -> live + archivedOnly visible.
+        $visible = $this->labelsOf($this->em->getRepository(FixtureEntity::class)->findAll());
+        sort($visible);
+        self::assertSame(['archived', 'live'], $visible);
+
+        // Both filters on -> only `live`.
+        $this->em->getFilters()->enable('archivable');
+        $this->em->clear();
+        $visible = $this->labelsOf($this->em->getRepository(FixtureEntity::class)->findAll());
+        self::assertSame(['live'], $visible);
+
+        // soft_delete off, archivable on -> live + soft-deleted.
+        $this->em->getFilters()->disable('soft_delete');
+        $this->em->clear();
+        $visible = $this->labelsOf($this->em->getRepository(FixtureEntity::class)->findAll());
+        sort($visible);
+        self::assertSame(['live', 'soft-deleted'], $visible);
+
+        // Both off -> all four.
+        $this->em->getFilters()->disable('archivable');
+        $this->em->clear();
+        self::assertCount(4, $this->em->getRepository(FixtureEntity::class)->findAll());
+    }
+
     public function testRemoveTriggersSoftDeleteAndFilterHidesRow(): void
     {
         $entity = new FixtureEntity();
@@ -168,6 +244,16 @@ final class AbstractITKDevEntityIntegrationTest extends IntegrationTestCase
         $visible = $this->em->getRepository(FixtureEntity::class)->findAll();
         self::assertCount(1, $visible);
         self::assertSame('live', $visible[0]->getLabel());
+    }
+
+    /**
+     * @param list<FixtureEntity> $entities
+     *
+     * @return list<string>
+     */
+    private function labelsOf(array $entities): array
+    {
+        return array_values(array_filter(array_map(static fn (FixtureEntity $e): ?string => $e->getLabel(), $entities)));
     }
 
     private function blameId(?UserInterface $user): ?Ulid

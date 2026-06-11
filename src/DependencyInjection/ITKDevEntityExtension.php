@@ -14,6 +14,7 @@ use ITKDev\EntityBundle\Doctrine\Listener\BlameableListener;
 use ITKDev\EntityBundle\Doctrine\Listener\SoftDeleteListener;
 use ITKDev\EntityBundle\Doctrine\Listener\TimestampableListener;
 use ITKDev\EntityBundle\Privacy\Attribute\Anonymize;
+use ITKDev\EntityBundle\Privacy\Strategy;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Resource\DirectoryResource;
@@ -179,6 +180,10 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
             foreach ($propRules as $property => $spec) {
                 if (!\is_string($property) || !\is_array($spec) || !isset($spec['strategy']) || !\is_string($spec['strategy'])) {
                     throw new InvalidConfigurationException(sprintf('itk_dev_entity.anonymization.rules[%s][%s] must be { strategy: ..., replacement?: ... }', $class, (string) $property));
+                }
+                if (null === Strategy::tryFrom($spec['strategy'])) {
+                    $valid = implode(', ', array_map(static fn (Strategy $s): string => $s->value, Strategy::cases()));
+                    throw new InvalidConfigurationException(sprintf('itk_dev_entity.anonymization.rules[%s][%s].strategy must be one of: %s. Got "%s".', $class, $property, $valid, $spec['strategy']));
                 }
                 $replacement = $spec['replacement'] ?? null;
                 if (null !== $replacement && !\is_string($replacement)) {

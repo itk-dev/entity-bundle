@@ -35,12 +35,22 @@ final class StrategyApplierTest extends TestCase
 
     public function testHashOfNonNullValue(): void
     {
-        self::assertSame(hash('sha256', 'value'), $this->applier->apply(Strategy::Hash, 'value'));
+        self::assertSame(hash('sha256', 'value'.'test-pepper'), $this->applier->apply(Strategy::Hash, 'value'));
     }
 
     public function testHashOfNullReturnsNull(): void
     {
         self::assertNull($this->applier->apply(Strategy::Hash, null));
+    }
+
+    public function testHashIsPepperDependent(): void
+    {
+        $other = new StrategyApplier('different-pepper');
+
+        self::assertNotSame(
+            $this->applier->apply(Strategy::Hash, 'alice@example.com'),
+            $other->apply(Strategy::Hash, 'alice@example.com'),
+        );
     }
 
     public function testPseudonymizeIsDeterministic(): void

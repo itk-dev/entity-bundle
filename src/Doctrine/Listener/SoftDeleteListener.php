@@ -33,6 +33,8 @@ final readonly class SoftDeleteListener
             $entity->setDeletedAt($now);
 
             $meta = $em->getClassMetadata($entity::class);
+            // remove() left the entity in STATE_REMOVED; persist() brings it back to
+            // STATE_MANAGED so scheduleExtraUpdate() will accept it.
             $em->persist($entity);
             $uow->scheduleExtraUpdate($entity, [
                 'deletedAt' => [null, $now],
@@ -43,6 +45,12 @@ final readonly class SoftDeleteListener
         }
     }
 
+    /**
+     * Doctrine ORM 3 has no public API to cancel a scheduled deletion, so we reach into
+     * the UnitOfWork's private $entityDeletions map and remove the entry directly. The
+     * composer.json constraint pins doctrine/orm to ^3 — if that constraint is widened,
+     * verify this property still exists (see SoftDeleteListenerInternalsTest).
+     */
     private static function cancelDeletion(UnitOfWork $uow, object $entity): void
     {
         $ref = new \ReflectionProperty(UnitOfWork::class, 'entityDeletions');

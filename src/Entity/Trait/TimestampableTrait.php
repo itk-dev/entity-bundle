@@ -14,6 +14,9 @@ trait TimestampableTrait
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
+    // Properties are filled by TimestampableListener on first flush, so they may be
+    // uninitialized between `new Entity()` and `$em->flush()`. `?? null` is safe on
+    // uninitialized typed properties (PHP 8+) and lets callers null-check before flush.
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt ?? null;

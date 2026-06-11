@@ -8,6 +8,7 @@ use ITKDev\EntityBundle\DependencyInjection\ITKDevEntityExtension;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\AttributeOnlyEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\NonAuditableEntity;
+use ITKDev\EntityBundle\Tests\Fixtures\Inheritance\GrandchildLeaf;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -39,6 +40,29 @@ final class ITKDevEntityDiscoveryTest extends TestCase
         // FixtureEntity extends AbstractITKDevEntity which carries #[ITKDevEntity];
         // the parent-chain walk in discovery picks it up.
         self::assertArrayHasKey(FixtureEntity::class, $entities);
+    }
+
+    public function testInheritedITKDevEntityAttributeReachesGrandchild(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', \dirname(__DIR__, 3));
+        $container->registerExtension(new ITKDevEntityExtension());
+        $container->prependExtensionConfig('itk_dev_entity', [
+            'user_class' => 'App\\Entity\\User',
+            'audit' => ['enabled' => true],
+            // Point only at the inheritance fixtures so unrelated entities are out of scope.
+            'entity_paths' => ['%kernel.project_dir%/tests/Fixtures/Inheritance'],
+        ]);
+
+        (new ITKDevEntityExtension())->prepend($container);
+
+        $auditor = $container->getExtensionConfig('dh_auditor');
+        $entities = $auditor[0]['providers']['doctrine']['entities'] ?? [];
+
+        // GrandchildLeaf -> IntermediateParent -> Grandparent[#[ITKDevEntity]].
+        // The chain walk in hasITKDevEntityAttribute() must reach the grandparent
+        // for the leaf to be discovered.
+        self::assertArrayHasKey(GrandchildLeaf::class, $entities);
     }
 
     public function testUnmarkedEntitiesNotInAuditorConfig(): void

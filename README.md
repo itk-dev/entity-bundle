@@ -126,9 +126,11 @@ itk_dev_entity:
     enabled: true
 ```
 
-When enabled, the `BlameableListener` (Doctrine `onFlush`) sets `createdBy` on insert and `modifiedBy` on every flush
-from `Symfony\Bundle\SecurityBundle\Security`. Bundle code types these as `?UserInterface`; the concrete class is
-resolved at runtime via Doctrine `resolve_target_entities`, configured by `itk_dev_entity.user_class`.
+When enabled, the `BlameableListener` (Doctrine `onFlush`) reads the current user from
+`Symfony\Bundle\SecurityBundle\Security` and sets `createdBy` + `modifiedBy` on insert, and `modifiedBy` on every
+update. Flushes that happen outside an authenticated request (workers, console commands) leave the existing blame
+fields untouched. Bundle code types these as `?UserInterface`; the concrete class is resolved at runtime via Doctrine
+`resolve_target_entities`, configured by `itk_dev_entity.user_class`.
 
 ### Opt-in: archivable
 
