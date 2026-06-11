@@ -51,8 +51,9 @@ final class SubjectAnonymizerTest extends IntegrationTestCase
 
         $report = $this->anonymizer->anonymize($alice);
 
-        self::assertSame(1, $report->rowsAnonymized);
-        self::assertSame(1, $report->classesAffected);
+        // alice herself + her one FixtureEntity row.
+        self::assertSame(2, $report->rowsAnonymized);
+        self::assertSame(2, $report->classesAffected);
 
         $this->em->clear();
 
@@ -80,7 +81,9 @@ final class SubjectAnonymizerTest extends IntegrationTestCase
 
         $report = $this->anonymizer->anonymize($alice);
 
-        self::assertSame(0, $report->rowsAnonymized);
+        // The pre-anonymized FixtureEntity is filtered out by the query (anonymizedAt IS NULL),
+        // so only alice herself is anonymized.
+        self::assertSame(1, $report->rowsAnonymized);
     }
 
     public function testAnonymizesSoftDeletedRows(): void
@@ -97,7 +100,8 @@ final class SubjectAnonymizerTest extends IntegrationTestCase
         $this->em->flush();
 
         $report = $this->anonymizer->anonymize($alice);
-        self::assertSame(1, $report->rowsAnonymized);
+        // alice + her soft-deleted FixtureEntity.
+        self::assertSame(2, $report->rowsAnonymized);
 
         $this->em->clear();
         $this->em->getFilters()->disable('soft_delete');

@@ -54,7 +54,8 @@ final class PrivacyAnonymizeCommandTest extends IntegrationTestCase
         $exit = $this->tester->execute(['subject' => (string) $alice->getId()]);
 
         self::assertSame(Command::SUCCESS, $exit);
-        self::assertStringContainsString('Anonymized 1 row(s)', $this->tester->getDisplay());
+        // Subject (TestUser is anonymizable) + the FixtureEntity it created.
+        self::assertStringContainsString('Anonymized 2 row(s)', $this->tester->getDisplay());
     }
 
     public function testInvalidUlidExitsFailure(): void

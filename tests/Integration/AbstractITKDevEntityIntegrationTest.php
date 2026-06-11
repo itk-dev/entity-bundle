@@ -7,7 +7,9 @@ namespace ITKDev\EntityBundle\Tests\Integration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use ITKDev\EntityBundle\Entity\Contract\IdentifiableInterface;
+use ITKDev\EntityBundle\Tests\Fixtures\Entity\AttributeOnlyEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
+use ITKDev\EntityBundle\Tests\Fixtures\Entity\NonAuditableEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
@@ -244,6 +246,62 @@ final class AbstractITKDevEntityIntegrationTest extends IntegrationTestCase
         $visible = $this->em->getRepository(FixtureEntity::class)->findAll();
         self::assertCount(1, $visible);
         self::assertSame('live', $visible[0]->getLabel());
+    }
+
+    public function testArchivableFilterReturnsNoConstraintForNonArchivableEntity(): void
+    {
+        $entity = new AttributeOnlyEntity();
+        $this->em->persist($entity);
+        $this->em->flush();
+        $this->em->clear();
+
+        $this->em->getFilters()->enable('archivable');
+
+        // AttributeOnlyEntity does not implement ArchivableInterface, so the filter must
+        // short-circuit with an empty constraint — otherwise the query would emit SQL
+        // referencing a non-existent archived_at column on test_attribute_only.
+        $rows = $this->em->getRepository(AttributeOnlyEntity::class)->findAll();
+        self::assertCount(1, $rows);
+    }
+
+    public function testSoftDeleteFilterReturnsNoConstraintForNonSoftDeletableEntity(): void
+    {
+        $entity = new AttributeOnlyEntity();
+        $this->em->persist($entity);
+        $this->em->flush();
+        $this->em->clear();
+
+        // soft_delete is enabled by default. AttributeOnlyEntity does not implement
+        // SoftDeletableInterface, so the filter must short-circuit rather than reference
+        // a non-existent deleted_at column.
+        $rows = $this->em->getRepository(AttributeOnlyEntity::class)->findAll();
+        self::assertCount(1, $rows);
+    }
+
+    public function testListenersSkipEntitiesWithoutTheirRespectiveInterface(): void
+    {
+        // NonAuditableEntity implements none of Timestampable/Blameable/SoftDeletable, so
+        // every per-feature onFlush listener must `continue` past it during insert, update
+        // and delete flushes. Exercises the skip-branches of all three listeners and the
+        // soft-delete filter's empty-constraint path for the same entity.
+        $alice = new TestUser();
+        $this->em->persist($alice);
+        $this->em->flush();
+        $this->loginAs($alice);
+
+        $entity = new NonAuditableEntity();
+        $entity->setLabel('initial');
+        $this->em->persist($entity);
+        $this->em->flush();
+
+        $entity->setLabel('changed');
+        $this->em->flush();
+
+        $this->em->remove($entity);
+        $this->em->flush();
+        $this->em->clear();
+
+        self::assertCount(0, $this->em->getRepository(NonAuditableEntity::class)->findAll());
     }
 
     /**

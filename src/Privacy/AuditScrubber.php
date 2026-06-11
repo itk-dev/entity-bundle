@@ -185,12 +185,9 @@ final readonly class AuditScrubber
     private function discoverAuditTables(): array
     {
         $tables = [];
+        /** @var DoctrineAuditConfiguration $configuration */
         $configuration = $this->auditProvider->getConfiguration();
-        \assert($configuration instanceof DoctrineAuditConfiguration);
         foreach ($configuration->getEntities() as $entry) {
-            if (!\is_array($entry) || !isset($entry['audit_table_name'])) {
-                continue;
-            }
             $tables[] = (string) $entry['audit_table_name'];
         }
 

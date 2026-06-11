@@ -13,41 +13,30 @@ use ITKDev\EntityBundle\Entity\Trait\AnonymizationStatusTrait;
 use ITKDev\EntityBundle\Entity\Trait\TimestampableTrait;
 use ITKDev\EntityBundle\Privacy\Attribute\Anonymize;
 use ITKDev\EntityBundle\Privacy\Strategy;
-use Symfony\Component\Security\Core\User\UserInterface;
 
+/**
+ * Anonymizable entity with no foreign key to TestUser, exercising SubjectAnonymizer's
+ * "skip class that has no user FK" branch.
+ */
 #[ORM\Entity]
-#[ORM\Table(name: 'test_user')]
+#[ORM\Table(name: 'test_orphan_anonymizable')]
 #[Auditable]
-class TestUser extends AbstractITKDevEntity implements UserInterface, TimestampableInterface, AnonymizationStatusInterface
+class OrphanAnonymizableEntity extends AbstractITKDevEntity implements TimestampableInterface, AnonymizationStatusInterface
 {
     use TimestampableTrait;
     use AnonymizationStatusTrait;
 
-    #[ORM\Column(type: 'string', length: 191, nullable: true)]
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
     #[Anonymize(strategy: Strategy::Redact)]
-    private ?string $email = null;
+    private ?string $payload = null;
 
-    public function getUserIdentifier(): string
+    public function setPayload(?string $payload): void
     {
-        return (string) $this->getId();
+        $this->payload = $payload;
     }
 
-    public function getRoles(): array
+    public function getPayload(): ?string
     {
-        return ['ROLE_USER'];
-    }
-
-    public function eraseCredentials(): void
-    {
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(?string $email): void
-    {
-        $this->email = $email;
+        return $this->payload;
     }
 }

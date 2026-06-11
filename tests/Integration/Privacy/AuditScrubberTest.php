@@ -8,6 +8,9 @@ use DH\Auditor\Provider\Doctrine\Persistence\Reader\Reader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use ITKDev\EntityBundle\Privacy\AnonymizationRule;
+use ITKDev\EntityBundle\Privacy\AuditScrubber;
+use ITKDev\EntityBundle\Privacy\Strategy;
 use ITKDev\EntityBundle\Privacy\SubjectAnonymizer;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
@@ -143,6 +146,94 @@ final class AuditScrubberTest extends IntegrationTestCase
         self::assertSame('198.51.100.20', $bobIp, "other users' IPs must stay intact");
     }
 
+    public function testScrubEntityHistoryIsANoopWhenNoRules(): void
+    {
+        $alice = $this->aUser();
+        $this->loginAs($alice);
+
+        $entity = new FixtureEntity();
+        $entity->setLabel('keepme');
+        $this->em->persist($entity);
+        $this->em->flush();
+
+        $before = $this->concatAuditDiffs((string) $entity->getId());
+        $this->scrubber()->scrubEntityHistory($entity, []);
+        $after = $this->concatAuditDiffs((string) $entity->getId());
+
+        self::assertSame($before, $after);
+        self::assertStringContainsString('keepme', $after);
+    }
+
+    public function testScrubEntityHistorySkipsRowsWithInvalidJsonOrNullSideValues(): void
+    {
+        $alice = $this->aUser();
+        $this->loginAs($alice);
+
+        $entity = new FixtureEntity();
+        $entity->setLabel('pii');
+        $this->em->persist($entity);
+        $this->em->flush();
+
+        // Row 1: diffs is not valid JSON. Row 2: label side values are null.
+        // Both must be left untouched (no error, no DB update) by the scrubber.
+        $this->conn->executeStatement(
+            "INSERT INTO test_fixture_entity_audit (type, object_id, diffs, blame_id, created_at) VALUES ('update', :oid, 'null', :uid, NOW())",
+            ['oid' => (string) $entity->getId(), 'uid' => (string) $alice->getId()],
+        );
+        $this->conn->executeStatement(
+            "INSERT INTO test_fixture_entity_audit (type, object_id, diffs, blame_id, created_at) VALUES ('update', :oid, :diffs, :uid, NOW())",
+            [
+                'oid' => (string) $entity->getId(),
+                'uid' => (string) $alice->getId(),
+                'diffs' => json_encode(['label' => ['old' => null, 'new' => null]], JSON_THROW_ON_ERROR),
+            ],
+        );
+
+        $this->scrubber()->scrubEntityHistory($entity, [
+            new AnonymizationRule('label', Strategy::Redact, '[REDACTED]'),
+        ]);
+
+        $rows = $this->conn->fetchAllAssociative(
+            'SELECT diffs FROM test_fixture_entity_audit WHERE object_id = :oid AND type = :t',
+            ['oid' => (string) $entity->getId(), 't' => 'update'],
+        );
+        $diffs = array_column($rows, 'diffs');
+        self::assertContains('null', $diffs);
+        self::assertContains('{"label":{"old":null,"new":null}}', $diffs);
+    }
+
+    public function testScrubAuditOlderThanPreservesScalarDiffEntries(): void
+    {
+        $alice = $this->aUser();
+        $this->loginAs($alice);
+
+        $entity = new FixtureEntity();
+        $entity->setLabel('pii');
+        $this->em->persist($entity);
+        $this->em->flush();
+
+        // Inject a row whose `diffs` JSON has a scalar (non-shape) entry. clearDiffValues
+        // must copy the scalar through verbatim rather than treat it as an old/new shape.
+        $this->conn->executeStatement(
+            "INSERT INTO test_fixture_entity_audit (type, object_id, diffs, blame_id, created_at) VALUES ('insert', :oid, :diffs, :uid, '2020-01-01 00:00:00')",
+            [
+                'oid' => (string) $entity->getId(),
+                'uid' => (string) $alice->getId(),
+                'diffs' => json_encode(['note' => 'scalar-marker', 'label' => ['old' => 'pii', 'new' => null]], JSON_THROW_ON_ERROR),
+            ],
+        );
+
+        $touched = $this->scrubber()->scrubAuditOlderThan(FixtureEntity::class, new \DateTimeImmutable('2025-01-01'));
+        self::assertGreaterThan(0, $touched);
+
+        $row = $this->conn->fetchAssociative(
+            "SELECT diffs FROM test_fixture_entity_audit WHERE object_id = :oid AND created_at = '2020-01-01 00:00:00'",
+            ['oid' => (string) $entity->getId()],
+        );
+        self::assertIsArray($row);
+        self::assertStringContainsString('scalar-marker', (string) $row['diffs']);
+    }
+
     public function testLeavesNonAnonymizableFieldsIntact(): void
     {
         $alice = $this->aUser();
@@ -167,6 +258,11 @@ final class AuditScrubberTest extends IntegrationTestCase
 
         self::assertStringContainsString('anonymizedAt', $allDiffs, 'anonymizedAt change is recorded and kept');
         self::assertStringContainsString('updatedAt', $allDiffs, 'updatedAt change is recorded and kept');
+    }
+
+    private function scrubber(): AuditScrubber
+    {
+        return self::getContainer()->get(AuditScrubber::class);
     }
 
     private function aUser(): TestUser
