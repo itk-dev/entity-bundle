@@ -1,0 +1,46 @@
+name: PHPUnit
+
+env:
+  COMPOSE_USER: runner
+  COMPOSE_DOMAIN: ci.local
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "**/*.php"
+      - "phpunit.xml.dist"
+      - "composer.json"
+      - "composer.lock"
+      - "docker-compose.yml"
+      - "docker-compose.postgres.yml"
+      - "docker-compose.php85.yml"
+      - "docker/**"
+      - ".github/workflows/phpunit.yaml"
+
+jobs:
+  phpunit:
+    name: PHPUnit (${{ matrix.database }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - database: mariadb
+            compose-files: "-f docker-compose.yml"
+          - database: postgres
+            compose-files: "-f docker-compose.yml -f docker-compose.postgres.yml"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create docker network
+        run: docker network create frontend
+
+      - name: Install dependencies
+        run: docker compose ${{ matrix.compose-files }} run --rm phpfpm composer install
+
+      - name: Run test suite
+        run: docker compose ${{ matrix.compose-files }} run --rm phpfpm vendor/bin/phpunit
