@@ -3,4 +3,5 @@
 /.phpunit.cache/
 /phpunit.xml
 /var/
+/coverage/
 .php-cs-fixer.cache

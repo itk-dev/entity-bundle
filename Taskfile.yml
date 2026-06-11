@@ -44,6 +44,12 @@ tasks:
     cmds:
       - '{{.COMPOSE_POSTGRES_PHP85}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
 
+  test:coverage:
+    desc: Run PHPUnit with coverage and enforce the 100% line gate
+    cmds:
+      - '{{.COMPOSE}} run -e XDEBUG_MODE=coverage --rm phpfpm vendor/bin/phpunit --coverage-clover=coverage/clover.xml {{.CLI_ARGS}}'
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/coverage-check coverage/clover.xml 100'
+
   lint:
     desc: Run every CI lint check (php, phpstan, composer, markdown, yaml)
     cmds:

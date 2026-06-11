@@ -42,5 +42,8 @@ jobs:
       - name: Install dependencies
         run: docker compose ${{ matrix.compose-files }} run --rm phpfpm composer install
 
-      - name: Run test suite
-        run: docker compose ${{ matrix.compose-files }} run --rm phpfpm vendor/bin/phpunit
+      - name: Run PHPUnit with coverage
+        run: docker compose ${{ matrix.compose-files }} run -e XDEBUG_MODE=coverage --rm phpfpm vendor/bin/phpunit --coverage-clover=coverage/clover.xml
+
+      - name: Enforce coverage threshold (100%)
+        run: docker compose ${{ matrix.compose-files }} run --rm phpfpm vendor/bin/coverage-check coverage/clover.xml 100
