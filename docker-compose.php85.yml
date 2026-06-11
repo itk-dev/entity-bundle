@@ -1,0 +1,9 @@
+# Opt-in override that swaps the default PHP 8.4 phpfpm image for PHP 8.5.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.php85.yml up
+#
+# Compose merges by service name, so redeclaring `image:` here is enough — the
+# rest of the phpfpm service (env, volumes, depends_on, networks) comes from
+# the base file.
+services:
+  phpfpm:
+    image: itkdev/php8.5-fpm:latest

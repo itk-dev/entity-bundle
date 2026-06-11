@@ -1,0 +1,29 @@
+# Opt-in override that swaps the default MariaDB `database` service for PostgreSQL.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.postgres.yml up
+#
+# `!reset` (Compose 2.24+) is used to drop the MariaDB env/volumes/ports from the
+# base service before redeclaring the postgres equivalents, so the container does
+# not carry stray MYSQL_* env vars or attempt to mount the mariadb-data volume.
+services:
+  database:
+    image: postgres:16
+    ports: !reset []
+    environment: !reset
+      POSTGRES_DB: app_bundle_test
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: "!ChangeMe!"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app_bundle_test"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes: !reset
+      - postgres-data:/var/lib/postgresql/data
+
+  phpfpm:
+    environment:
+      - DATABASE_URL=postgresql://app:!ChangeMe!@database:5432/app_bundle_test?serverVersion=16&charset=utf8
+
+volumes:
+  postgres-data:

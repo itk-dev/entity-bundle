@@ -1,0 +1,16 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ITKDev\EntityBundle\Privacy\:
+        resource: '../src/Privacy/'
+        exclude:
+            - '../src/Privacy/Attribute/'
+            - '../src/Privacy/Strategy.php'
+            - '../src/Privacy/AnonymizationReport.php'
+            - '../src/Privacy/AnonymizationRule.php'
+
+    ITKDev\EntityBundle\Command\:
+        resource: '../src/Command/'

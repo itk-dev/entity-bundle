@@ -1,0 +1,12 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+when@test:
+    services:
+        Symfony\Component\Clock\MockClock:
+            arguments: ['2025-01-01 00:00:00 UTC']
+            public: true
+        Psr\Clock\ClockInterface: '@Symfony\Component\Clock\MockClock'
+        clock: '@Symfony\Component\Clock\MockClock'

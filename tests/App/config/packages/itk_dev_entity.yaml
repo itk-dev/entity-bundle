@@ -1,0 +1,16 @@
+itk_dev_entity:
+    user_class: ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser
+    entity_paths:
+        - '%kernel.project_dir%/tests/Fixtures/Entity'
+    audit:
+        enabled: true
+    anonymization:
+        enabled: true
+    timestampable:
+        enabled: true
+    blameable:
+        enabled: true
+    soft_delete:
+        enabled: true
+    archivable:
+        enabled: true
