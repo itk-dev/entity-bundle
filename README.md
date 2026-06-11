@@ -7,7 +7,8 @@ Cross-cutting entity foundation for Symfony 7.4 / 8.0 and Doctrine ORM 3 project
 - PHP **>= 8.4**
 - Symfony **7.4 or 8.0** (`framework-bundle`, `security-bundle`, `clock`, `finder`, `uid`)
 - Doctrine ORM **^3.0** with `doctrine/doctrine-bundle` **^2.13 or ^3.0**
-- [`damienharper/auditor-bundle`](https://github.com/DamienHarper/auditor-bundle) **^6.3** (only relevant when `audit.enabled` is on)
+- [`damienharper/auditor-bundle`](https://github.com/DamienHarper/auditor-bundle) **^6.3**
+  (only relevant when `audit.enabled` is on)
 
 ## Installation
 

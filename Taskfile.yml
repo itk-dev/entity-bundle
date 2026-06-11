@@ -45,9 +45,10 @@ tasks:
       - '{{.COMPOSE_POSTGRES_PHP85}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
 
   lint:
-    desc: Run every CI lint check (php, composer, markdown, yaml)
+    desc: Run every CI lint check (php, phpstan, composer, markdown, yaml)
     cmds:
       - task: lint:php
+      - task: lint:phpstan
       - task: lint:composer
       - task: lint:markdown
       - task: lint:yaml
@@ -56,6 +57,11 @@ tasks:
     desc: Check PHP code style (php-cs-fixer, dry-run)
     cmds:
       - '{{.COMPOSE}} run --rm phpfpm vendor/bin/php-cs-fixer fix --dry-run --diff'
+
+  lint:phpstan:
+    desc: Static analysis (phpstan, level 8)
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/phpstan analyse --no-progress'
 
   lint:composer:
     desc: Validate, normalize-check, and audit composer
