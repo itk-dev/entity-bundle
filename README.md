@@ -1,6 +1,43 @@
 # itk-dev/entity-bundle
 
-Cross-cutting entity foundation for Symfony 7.4 / Doctrine ORM 3 projects.
+Cross-cutting entity foundation for Symfony 7.4 / 8.0 and Doctrine ORM 3 projects.
+
+## Requirements
+
+- PHP **>= 8.4**
+- Symfony **7.4 or 8.0** (`framework-bundle`, `security-bundle`, `clock`, `finder`, `uid`)
+- Doctrine ORM **^3.0** with `doctrine/doctrine-bundle` **^2.13 or ^3.0**
+- [`damienharper/auditor-bundle`](https://github.com/DamienHarper/auditor-bundle) **^6.3** (only relevant when `audit.enabled` is on)
+
+## Installation
+
+The bundle is not published on Packagist. Add it to a Symfony project as a Composer VCS repository:
+
+```json
+{
+  "repositories": [
+    { "type": "vcs", "url": "https://github.com/itk-dev/entity-bundle.git" }
+  ],
+  "require": {
+    "itk-dev/entity-bundle": "^1.0"
+  }
+}
+```
+
+Then:
+
+```bash
+composer require itk-dev/entity-bundle:^1.0
+```
+
+Enable the bundle in `config/bundles.php`:
+
+```php
+return [
+    // ...
+    ITKDev\EntityBundle\ITKDevEntityBundle::class => ['all' => true],
+];
+```
 
 ## What you get
 
@@ -318,23 +355,9 @@ compile time and ships two console commands:
 
 The mechanism is law-neutral; the same machinery applies to GDPR, CCPA, LGPD, PIPEDA, etc.
 
-## Installation
+## Configuration
 
-```bash
-composer require itk-dev/entity-bundle
-```
-
-Register the bundle (if not auto-registered):
-
-```php
-// config/bundles.php
-return [
-    // ...
-    ITKDev\EntityBundle\ITKDevEntityBundle::class => ['all' => true],
-];
-```
-
-Configure (everything is optional — see the reference table below for defaults):
+Everything is optional — see the reference table below for defaults.
 
 ```yaml
 # config/packages/itk_dev_entity.yaml
