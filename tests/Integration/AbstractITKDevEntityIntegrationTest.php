@@ -6,12 +6,14 @@ namespace ITKDev\EntityBundle\Tests\Integration;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use ITKDev\EntityBundle\Entity\Contract\IdentifiableInterface;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Uid\Ulid;
 
 final class AbstractITKDevEntityIntegrationTest extends KernelTestCase
 {
@@ -39,7 +41,6 @@ final class AbstractITKDevEntityIntegrationTest extends KernelTestCase
     public function testTimestampsAreSetOnInsertAndUpdate(): void
     {
         $clock = self::getContainer()->get('clock');
-        \assert($clock instanceof MockClock);
         $clock->modify('2025-01-01 10:00:00');
 
         $entity = new FixtureEntity();
@@ -75,15 +76,15 @@ final class AbstractITKDevEntityIntegrationTest extends KernelTestCase
         $this->em->persist($entity);
         $this->em->flush();
 
-        self::assertSame($alice->getId(), $entity->getCreatedBy()?->getId());
-        self::assertSame($alice->getId(), $entity->getModifiedBy()?->getId());
+        self::assertSame($alice->getId(), $this->blameId($entity->getCreatedBy()));
+        self::assertSame($alice->getId(), $this->blameId($entity->getModifiedBy()));
 
         $this->loginAs($bob);
         $entity->setLabel('mutated');
         $this->em->flush();
 
-        self::assertSame($alice->getId(), $entity->getCreatedBy()?->getId());
-        self::assertSame($bob->getId(), $entity->getModifiedBy()?->getId());
+        self::assertSame($alice->getId(), $this->blameId($entity->getCreatedBy()));
+        self::assertSame($bob->getId(), $this->blameId($entity->getModifiedBy()));
     }
 
     public function testBlameableTolelratesNullSecurityContext(): void
@@ -168,6 +169,16 @@ final class AbstractITKDevEntityIntegrationTest extends KernelTestCase
         $visible = $this->em->getRepository(FixtureEntity::class)->findAll();
         self::assertCount(1, $visible);
         self::assertSame('live', $visible[0]->getLabel());
+    }
+
+    private function blameId(?UserInterface $user): ?Ulid
+    {
+        if (null === $user) {
+            return null;
+        }
+        self::assertInstanceOf(IdentifiableInterface::class, $user);
+
+        return $user->getId();
     }
 
     private function loginAs(TestUser $user): void

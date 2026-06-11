@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Privacy;
 
+use DH\Auditor\Provider\Doctrine\Configuration as DoctrineAuditConfiguration;
 use DH\Auditor\Provider\Doctrine\DoctrineProvider;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -184,7 +185,9 @@ final readonly class AuditScrubber
     private function discoverAuditTables(): array
     {
         $tables = [];
-        foreach ($this->auditProvider->getConfiguration()->getEntities() as $entry) {
+        $configuration = $this->auditProvider->getConfiguration();
+        \assert($configuration instanceof DoctrineAuditConfiguration);
+        foreach ($configuration->getEntities() as $entry) {
             if (!\is_array($entry) || !isset($entry['audit_table_name'])) {
                 continue;
             }

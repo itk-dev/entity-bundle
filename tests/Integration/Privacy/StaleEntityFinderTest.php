@@ -6,6 +6,7 @@ namespace ITKDev\EntityBundle\Tests\Integration\Privacy;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use ITKDev\EntityBundle\Entity\Contract\IdentifiableInterface;
 use ITKDev\EntityBundle\Privacy\StaleEntityFinder;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -47,6 +48,7 @@ final class StaleEntityFinderTest extends KernelTestCase
         $results = $this->finder->findOlderThan(FixtureEntity::class, new \DateTimeImmutable('2024-06-01'));
 
         self::assertCount(1, $results);
+        self::assertInstanceOf(IdentifiableInterface::class, $results[0]);
         self::assertEquals($old->getId(), $results[0]->getId());
     }
 

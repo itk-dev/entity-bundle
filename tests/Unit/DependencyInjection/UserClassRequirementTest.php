@@ -87,6 +87,7 @@ final class UserClassRequirementTest extends TestCase
         return $container;
     }
 
+    /** @param array<string, mixed> $config */
     private function prependContainer(array $config): ContainerBuilder
     {
         $container = $this->container();

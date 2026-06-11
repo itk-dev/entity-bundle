@@ -151,33 +151,49 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
      * Merge config-supplied anonymization rules into the attribute-discovered set.
      * For the same property name, the config wins (it's the explicit override).
      *
-     * @param array<class-string, list<array{property: string, strategy: string, replacement: ?string}>> $discovered
-     * @param array<string, array<string, array{strategy: string, replacement?: ?string}>>               $configRules
+     * $configRules comes from a variableNode in the config tree, so its shape is
+     * not enforced upstream — every layer is validated here. Class keys are not
+     * required to exist locally (the bundle supports overrides for third-party
+     * entities that may live in unloaded namespaces).
      *
-     * @return array<class-string, list<array{property: string, strategy: string, replacement: ?string}>>
+     * @param array<class-string, list<array{property: string, strategy: string, replacement: ?string}>> $discovered
+     * @param array<string, mixed>                                                                       $configRules
+     *
+     * @return array<string, list<array{property: string, strategy: string, replacement: ?string}>>
      */
     private function mergeAnonymizationRules(array $discovered, array $configRules): array
     {
+        /** @var array<string, list<array{property: string, strategy: string, replacement: ?string}>> $merged */
+        $merged = $discovered;
+
         foreach ($configRules as $class => $propRules) {
+            if (!\is_array($propRules)) {
+                throw new InvalidConfigurationException(sprintf('itk_dev_entity.anonymization.rules[%s] must be a map of property => { strategy: ..., replacement?: ... }.', $class));
+            }
+
             /** @var array<string, array{property: string, strategy: string, replacement: ?string}> $byProp */
             $byProp = [];
-            foreach ($discovered[$class] ?? [] as $rule) {
+            foreach ($merged[$class] ?? [] as $rule) {
                 $byProp[$rule['property']] = $rule;
             }
             foreach ($propRules as $property => $spec) {
-                if (!\is_array($spec) || !isset($spec['strategy'])) {
-                    throw new InvalidConfigurationException(sprintf('itk_dev_entity.anonymization.rules[%s][%s] must be { strategy: ..., replacement?: ... }', $class, $property));
+                if (!\is_string($property) || !\is_array($spec) || !isset($spec['strategy']) || !\is_string($spec['strategy'])) {
+                    throw new InvalidConfigurationException(sprintf('itk_dev_entity.anonymization.rules[%s][%s] must be { strategy: ..., replacement?: ... }', $class, (string) $property));
+                }
+                $replacement = $spec['replacement'] ?? null;
+                if (null !== $replacement && !\is_string($replacement)) {
+                    throw new InvalidConfigurationException(sprintf('itk_dev_entity.anonymization.rules[%s][%s].replacement must be a string or null.', $class, $property));
                 }
                 $byProp[$property] = [
                     'property' => $property,
-                    'strategy' => (string) $spec['strategy'],
-                    'replacement' => $spec['replacement'] ?? null,
+                    'strategy' => $spec['strategy'],
+                    'replacement' => $replacement,
                 ];
             }
-            $discovered[$class] = array_values($byProp);
+            $merged[$class] = array_values($byProp);
         }
 
-        return $discovered;
+        return $merged;
     }
 
     /**
@@ -209,7 +225,6 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
     private function discoverEntities(ContainerBuilder $container, array $paths): array
     {
         $projectDir = $container->getParameter('kernel.project_dir');
-        \assert(\is_string($projectDir));
 
         $entities = [];
         foreach ($paths as $path) {
@@ -241,6 +256,8 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
      * Walk the class hierarchy looking for #[ITKDevEntity]. The attribute is non-inherited
      * at the language level, but the bundle treats inherited declarations as opting in —
      * so subclasses of AbstractITKDevEntity automatically count.
+     *
+     * @param \ReflectionClass<object> $ref
      */
     private function hasITKDevEntityAttribute(\ReflectionClass $ref): bool
     {

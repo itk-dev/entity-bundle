@@ -32,6 +32,7 @@ final class PrivacyAnonymizeCommandTest extends KernelTestCase
         $tool->dropSchema($metadata);
         $tool->createSchema($metadata);
 
+        self::assertNotNull(self::$kernel);
         $app = new Application(self::$kernel);
         $this->tester = new CommandTester($app->find('privacy:anonymize'));
     }

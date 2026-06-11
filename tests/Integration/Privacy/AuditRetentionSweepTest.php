@@ -69,7 +69,9 @@ final class AuditRetentionSweepTest extends KernelTestCase
             'SELECT diffs, ip, blame_user FROM test_fixture_entity_audit WHERE object_id = :oid',
             ['oid' => (string) $old->getId()],
         );
+        self::assertIsArray($oldRow);
         $diffs = json_decode((string) $oldRow['diffs'], true);
+        self::assertIsArray($diffs);
         self::assertNull($diffs['label']['new'], 'old PII values must be nulled');
         self::assertArrayHasKey('label', $diffs, 'field-key structure is kept for analytics');
         self::assertNull($oldRow['ip']);
@@ -79,6 +81,7 @@ final class AuditRetentionSweepTest extends KernelTestCase
             'SELECT diffs FROM test_fixture_entity_audit WHERE object_id = :oid',
             ['oid' => (string) $fresh->getId()],
         );
+        self::assertIsArray($freshRow);
         self::assertStringContainsString('fresh-pii', (string) $freshRow['diffs'], 'in-retention rows untouched');
     }
 
@@ -99,6 +102,7 @@ final class AuditRetentionSweepTest extends KernelTestCase
             'SELECT blame_id, object_id, type, transaction_hash FROM test_fixture_entity_audit WHERE object_id = :oid',
             ['oid' => (string) $entity->getId()],
         );
+        self::assertIsArray($row);
 
         self::assertSame((string) $alice->getId(), $row['blame_id']);
         self::assertSame((string) $entity->getId(), $row['object_id']);
@@ -144,6 +148,7 @@ final class AuditRetentionSweepTest extends KernelTestCase
             'SELECT diffs FROM test_fixture_entity_audit WHERE object_id = :oid',
             ['oid' => (string) $entity->getId()],
         );
+        self::assertIsArray($row);
         self::assertStringContainsString('original', (string) $row['diffs'], 'dry-run must not mutate');
     }
 

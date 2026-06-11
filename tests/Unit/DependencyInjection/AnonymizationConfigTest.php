@@ -27,7 +27,9 @@ final class AnonymizationConfigTest extends TestCase
         self::assertFalse($container->hasDefinition(PrivacyAnonymizeCommand::class));
         self::assertFalse($container->hasDefinition(PrivacyAnonymizeStaleCommand::class));
 
-        self::assertSame([], $container->getParameter('itk_dev_entity.anonymization_rules'));
+        /** @var array<mixed>|bool|float|int|string|\UnitEnum|null $rules */
+        $rules = $container->getParameter('itk_dev_entity.anonymization_rules');
+        self::assertSame([], $rules);
     }
 
     public function testExplicitlyEnabledRegistersPrivacyServicesAndCommands(): void

@@ -58,6 +58,8 @@ final class SubjectAnonymizerTest extends KernelTestCase
 
         $aliceFresh = $this->em->getRepository(FixtureEntity::class)->find($aliceEntity->getId());
         $bobFresh = $this->em->getRepository(FixtureEntity::class)->find($bobEntity->getId());
+        self::assertNotNull($aliceFresh);
+        self::assertNotNull($bobFresh);
 
         self::assertSame('[REDACTED]', $aliceFresh->getLabel());
         self::assertTrue($aliceFresh->isAnonymized());
@@ -100,6 +102,7 @@ final class SubjectAnonymizerTest extends KernelTestCase
         $this->em->clear();
         $this->em->getFilters()->disable('soft_delete');
         $fresh = $this->em->getRepository(FixtureEntity::class)->find($entity->getId());
+        self::assertNotNull($fresh);
         self::assertSame('[REDACTED]', $fresh->getLabel());
         self::assertTrue($fresh->isDeleted());
     }

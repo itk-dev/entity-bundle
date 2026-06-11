@@ -86,6 +86,7 @@ final class ThirdPartyOverrideTest extends TestCase
             ],
         ]], $container = $this->container());
 
+        /** @var array<string, mixed> $rules */
         $rules = $container->getParameter('itk_dev_entity.anonymization_rules');
         self::assertArrayHasKey('Vendor\\Bundle\\Entity\\Thing', $rules);
         self::assertSame(
@@ -113,6 +114,7 @@ final class ThirdPartyOverrideTest extends TestCase
             'entity_paths' => ['%kernel.project_dir%/tests/Fixtures/Entity'],
         ]], $container = $this->container());
 
+        /** @var array<string, list<array{property: string, strategy: string, replacement: string|null}>> $rules */
         $rules = $container->getParameter('itk_dev_entity.anonymization_rules');
         $fixtureRules = $rules[FixtureEntity::class] ?? [];
         $byProp = [];
@@ -149,6 +151,7 @@ final class ThirdPartyOverrideTest extends TestCase
         return $container;
     }
 
+    /** @param array<string, mixed> $config */
     private function prependContainer(array $config): ContainerBuilder
     {
         $container = $this->container();

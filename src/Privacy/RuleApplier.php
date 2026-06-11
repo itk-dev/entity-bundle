@@ -33,6 +33,9 @@ final readonly class RuleApplier
         }
     }
 
+    /**
+     * @param \ReflectionClass<object> $ref
+     */
     private function locateProperty(\ReflectionClass $ref, string $name): \ReflectionProperty
     {
         $cursor = $ref;

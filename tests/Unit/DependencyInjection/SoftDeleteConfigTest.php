@@ -8,7 +8,6 @@ use ITKDev\EntityBundle\DependencyInjection\ITKDevEntityExtension;
 use ITKDev\EntityBundle\Doctrine\Listener\SoftDeleteListener;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
 
 final class SoftDeleteConfigTest extends TestCase
 {
@@ -46,7 +45,6 @@ final class SoftDeleteConfigTest extends TestCase
         self::assertFalse($this->isListenerExcluded($container), 'SoftDeleteListener must not be excluded when soft_delete is enabled');
 
         $definition = $container->getDefinition(SoftDeleteListener::class);
-        self::assertInstanceOf(Definition::class, $definition);
         $tags = $definition->getTag('doctrine.event_listener');
         self::assertNotEmpty($tags, 'SoftDeleteListener must be tagged as a Doctrine event listener');
         self::assertSame('onFlush', $tags[0]['event'] ?? null);
@@ -75,6 +73,7 @@ final class SoftDeleteConfigTest extends TestCase
         return $container;
     }
 
+    /** @param array<string, mixed> $config */
     private function prependContainer(array $config): ContainerBuilder
     {
         $container = $this->container();

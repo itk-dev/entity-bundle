@@ -10,7 +10,7 @@ use ITKDev\EntityBundle\Entity\Contract\ArchivableInterface;
 
 final class ArchivableFilter extends SQLFilter
 {
-    public function addFilterConstraint(ClassMetadata $targetEntity, $targetTableAlias): string
+    public function addFilterConstraint(ClassMetadata $targetEntity, string $targetTableAlias): string
     {
         if (!$targetEntity->reflClass?->implementsInterface(ArchivableInterface::class)) {
             return '';

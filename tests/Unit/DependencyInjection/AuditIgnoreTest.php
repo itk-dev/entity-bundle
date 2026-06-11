@@ -51,6 +51,7 @@ final class AuditIgnoreTest extends TestCase
         );
     }
 
+    /** @param array<string, mixed> $config */
     private function prependContainer(array $config): ContainerBuilder
     {
         $container = new ContainerBuilder();

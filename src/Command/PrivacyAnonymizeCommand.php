@@ -23,9 +23,6 @@ use Symfony\Component\Uid\Ulid;
 )]
 final class PrivacyAnonymizeCommand extends Command
 {
-    /**
-     * @param class-string<UserInterface&IdentifiableInterface> $userClass
-     */
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly SubjectAnonymizer $anonymizer,
@@ -44,7 +41,7 @@ final class PrivacyAnonymizeCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        if ('' === $this->userClass) {
+        if ('' === $this->userClass || !class_exists($this->userClass)) {
             $io->error('privacy:anonymize requires itk_dev_entity.user_class to be configured.');
 
             return Command::FAILURE;

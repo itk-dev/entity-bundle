@@ -55,6 +55,8 @@ final class BulkAnonymizerTest extends KernelTestCase
         $this->em->clear();
         $oldFresh = $this->em->getRepository(FixtureEntity::class)->find($old->getId());
         $youngFresh = $this->em->getRepository(FixtureEntity::class)->find($young->getId());
+        self::assertNotNull($oldFresh);
+        self::assertNotNull($youngFresh);
 
         self::assertSame('[REDACTED]', $oldFresh->getLabel());
         self::assertTrue($oldFresh->isAnonymized());
@@ -77,6 +79,7 @@ final class BulkAnonymizerTest extends KernelTestCase
 
         $this->em->clear();
         $fresh = $this->em->getRepository(FixtureEntity::class)->find($entity->getId());
+        self::assertNotNull($fresh);
         self::assertSame('original', $fresh->getLabel());
         self::assertFalse($fresh->isAnonymized());
     }

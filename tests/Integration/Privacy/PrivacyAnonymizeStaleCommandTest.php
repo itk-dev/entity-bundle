@@ -32,6 +32,7 @@ final class PrivacyAnonymizeStaleCommandTest extends KernelTestCase
         $tool->dropSchema($metadata);
         $tool->createSchema($metadata);
 
+        self::assertNotNull(self::$kernel);
         $app = new Application(self::$kernel);
         $this->tester = new CommandTester($app->find('privacy:anonymize-stale'));
     }
@@ -84,6 +85,7 @@ final class PrivacyAnonymizeStaleCommandTest extends KernelTestCase
 
         $this->em->clear();
         $fresh = $this->em->getRepository(FixtureEntity::class)->find($entity->getId());
+        self::assertNotNull($fresh);
         self::assertSame('original', $fresh->getLabel(), 'dry-run must not mutate');
     }
 }

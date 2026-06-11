@@ -38,6 +38,7 @@ final class ArchivableConfigTest extends TestCase
         self::assertFalse($filters['archivable']['enabled'], 'archivable filter is registered disabled so it can be toggled per-request');
     }
 
+    /** @param array<string, mixed> $config */
     private function prependContainer(array $config): ContainerBuilder
     {
         $container = new ContainerBuilder();

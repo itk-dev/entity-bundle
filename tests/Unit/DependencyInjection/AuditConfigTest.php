@@ -33,9 +33,10 @@ final class AuditConfigTest extends TestCase
         // No entity_paths configured + tmp project dir = no discoverable entities = no prepend.
         // Use a directory that exists but is empty; assert intent via the absence of error.
         $configs = $prepend->getExtensionConfig('dh_auditor');
-        self::assertIsArray($configs);
+        self::assertSame([], $configs, 'No auditable entities means no dh_auditor config is prepended.');
     }
 
+    /** @param array<string, mixed> $config */
     private function prependContainer(array $config): ContainerBuilder
     {
         $container = new ContainerBuilder();

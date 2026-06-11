@@ -14,7 +14,7 @@ final class IdentifiableTraitTest extends TestCase
     {
         $entity = new FixtureEntity();
 
-        self::assertInstanceOf(Ulid::class, $entity->getId());
+        self::assertTrue(Ulid::isValid((string) $entity->getId()));
     }
 
     public function testEachInstanceHasUniqueId(): void
