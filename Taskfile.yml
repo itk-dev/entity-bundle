@@ -1,0 +1,45 @@
+# https://taskfile.dev
+version: '3'
+
+vars:
+  COMPOSE: 'docker compose'
+  COMPOSE_POSTGRES: 'docker compose -f docker-compose.yml -f docker-compose.postgres.yml'
+  COMPOSE_PHP85: 'docker compose -f docker-compose.yml -f docker-compose.php85.yml'
+  COMPOSE_POSTGRES_PHP85: 'docker compose -f docker-compose.yml -f docker-compose.postgres.yml -f docker-compose.php85.yml'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  test:
+    desc: Run the full PHPUnit suite (MariaDB 11.4, PHP 8.4)
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
+
+  test:unit:
+    desc: Run the Unit suite only
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/phpunit tests/Unit {{.CLI_ARGS}}'
+
+  test:integration:
+    desc: Run the Integration suite only
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/phpunit tests/Integration {{.CLI_ARGS}}'
+
+  test:postgres:
+    desc: Run the full suite against PostgreSQL 16
+    cmds:
+      - '{{.COMPOSE_POSTGRES}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
+
+  test:php85:
+    desc: Run the full suite on PHP 8.5
+    cmds:
+      - '{{.COMPOSE_PHP85}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
+
+  test:postgres:php85:
+    desc: Run the full suite on PHP 8.5 against PostgreSQL 16
+    cmds:
+      - '{{.COMPOSE_POSTGRES_PHP85}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'

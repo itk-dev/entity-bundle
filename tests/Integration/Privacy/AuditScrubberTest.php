@@ -83,22 +83,26 @@ final class AuditScrubberTest extends KernelTestCase
         $this->em->flush();
 
         // Sanity: history has all three values before scrub
-        $allDiffs = $this->conn->fetchOne(
-            'SELECT string_agg(diffs::text, $$ $$) FROM test_fixture_entity_audit WHERE object_id = :oid',
-            ['oid' => (string) $entity->getId()],
-        );
-        self::assertStringContainsString('original-pii', (string) $allDiffs);
-        self::assertStringContainsString('updated-pii', (string) $allDiffs);
+        $allDiffs = $this->concatAuditDiffs((string) $entity->getId());
+        self::assertStringContainsString('original-pii', $allDiffs);
+        self::assertStringContainsString('updated-pii', $allDiffs);
 
         $this->subjectAnonymizer->anonymize($alice);
 
-        $allDiffs = $this->conn->fetchOne(
-            'SELECT string_agg(diffs::text, $$ $$) FROM test_fixture_entity_audit WHERE object_id = :oid',
-            ['oid' => (string) $entity->getId()],
+        $allDiffs = $this->concatAuditDiffs((string) $entity->getId());
+        self::assertStringNotContainsString('original-pii', $allDiffs);
+        self::assertStringNotContainsString('updated-pii', $allDiffs);
+        self::assertStringNotContainsString('latest-pii', $allDiffs);
+    }
+
+    private function concatAuditDiffs(string $objectId): string
+    {
+        $rows = $this->conn->fetchAllAssociative(
+            'SELECT diffs FROM test_fixture_entity_audit WHERE object_id = :oid',
+            ['oid' => $objectId],
         );
-        self::assertStringNotContainsString('original-pii', (string) $allDiffs);
-        self::assertStringNotContainsString('updated-pii', (string) $allDiffs);
-        self::assertStringNotContainsString('latest-pii', (string) $allDiffs);
+
+        return implode(' ', array_map(static fn (array $row): string => (string) $row['diffs'], $rows));
     }
 
     public function testNullsIpOnAuditRowsWhereSubjectWasActor(): void
