@@ -10,12 +10,12 @@ use Doctrine\ORM\Tools\SchemaTool;
 use ITKDev\EntityBundle\Privacy\BulkAnonymizer;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use ITKDev\EntityBundle\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
-final class AuditRetentionSweepTest extends KernelTestCase
+final class AuditRetentionSweepTest extends IntegrationTestCase
 {
     private EntityManagerInterface $em;
     private Connection $conn;

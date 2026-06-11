@@ -7,13 +7,13 @@ namespace ITKDev\EntityBundle\Tests\Integration\Privacy;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
+use ITKDev\EntityBundle\Tests\Integration\IntegrationTestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class PrivacyAnonymizeStaleCommandTest extends KernelTestCase
+final class PrivacyAnonymizeStaleCommandTest extends IntegrationTestCase
 {
     private EntityManagerInterface $em;
     private MockClock $clock;

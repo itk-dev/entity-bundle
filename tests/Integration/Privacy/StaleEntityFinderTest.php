@@ -9,10 +9,10 @@ use Doctrine\ORM\Tools\SchemaTool;
 use ITKDev\EntityBundle\Entity\Contract\IdentifiableInterface;
 use ITKDev\EntityBundle\Privacy\StaleEntityFinder;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use ITKDev\EntityBundle\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\Clock\MockClock;
 
-final class StaleEntityFinderTest extends KernelTestCase
+final class StaleEntityFinderTest extends IntegrationTestCase
 {
     private EntityManagerInterface $em;
     private StaleEntityFinder $finder;

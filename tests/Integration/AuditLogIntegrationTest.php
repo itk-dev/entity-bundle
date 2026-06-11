@@ -9,11 +9,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
-final class AuditLogIntegrationTest extends KernelTestCase
+final class AuditLogIntegrationTest extends IntegrationTestCase
 {
     private EntityManagerInterface $em;
     private Reader $auditReader;

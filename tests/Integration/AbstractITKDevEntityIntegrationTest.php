@@ -9,13 +9,12 @@ use Doctrine\ORM\Tools\SchemaTool;
 use ITKDev\EntityBundle\Entity\Contract\IdentifiableInterface;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Ulid;
 
-final class AbstractITKDevEntityIntegrationTest extends KernelTestCase
+final class AbstractITKDevEntityIntegrationTest extends IntegrationTestCase
 {
     private EntityManagerInterface $em;
 

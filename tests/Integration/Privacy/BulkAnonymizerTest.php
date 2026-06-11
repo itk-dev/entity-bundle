@@ -8,10 +8,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use ITKDev\EntityBundle\Privacy\BulkAnonymizer;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use ITKDev\EntityBundle\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\Clock\MockClock;
 
-final class BulkAnonymizerTest extends KernelTestCase
+final class BulkAnonymizerTest extends IntegrationTestCase
 {
     private EntityManagerInterface $em;
     private BulkAnonymizer $anonymizer;

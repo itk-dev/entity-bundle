@@ -11,11 +11,11 @@ use Doctrine\ORM\Tools\SchemaTool;
 use ITKDev\EntityBundle\Privacy\SubjectAnonymizer;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use ITKDev\EntityBundle\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
-final class AuditScrubberTest extends KernelTestCase
+final class AuditScrubberTest extends IntegrationTestCase
 {
     private EntityManagerInterface $em;
     private Connection $conn;
