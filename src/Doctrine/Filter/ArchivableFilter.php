@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Doctrine\Filter;
 
-use ITKDev\EntityBundle\Entity\Contract\ArchivableInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Filter\SQLFilter;
+use ITKDev\EntityBundle\Entity\Contract\ArchivableInterface;
 
 final class ArchivableFilter extends SQLFilter
 {

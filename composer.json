@@ -1,25 +1,28 @@
 {
     "name": "itk-dev/entity-bundle",
     "description": "Cross-cutting entity foundation: ULID id, timestamps, blame, soft-delete, archivable, audit log auto-wiring, privacy anonymization with retention.",
-    "type": "symfony-bundle",
     "license": "MPL-2.0",
+    "type": "symfony-bundle",
     "require": {
         "php": ">=8.4",
-        "symfony/framework-bundle": "^7.4 || ^8.0",
-        "symfony/security-bundle": "^7.4 || ^8.0",
-        "symfony/uid": "^7.4 || ^8.0",
-        "symfony/clock": "^7.4 || ^8.0",
-        "symfony/finder": "^7.4 || ^8.0",
+        "damienharper/auditor-bundle": "^6.3",
         "doctrine/doctrine-bundle": "^2.13 || ^3.0",
         "doctrine/orm": "^3.0",
-        "damienharper/auditor-bundle": "^6.3"
+        "symfony/clock": "^7.4 || ^8.0",
+        "symfony/finder": "^7.4 || ^8.0",
+        "symfony/framework-bundle": "^7.4 || ^8.0",
+        "symfony/security-bundle": "^7.4 || ^8.0",
+        "symfony/uid": "^7.4 || ^8.0"
     },
     "require-dev": {
+        "ergebnis/composer-normalize": "^2.52",
+        "friendsofphp/php-cs-fixer": "^3.95",
         "phpunit/phpunit": "^13.1",
         "symfony/browser-kit": "^7.4 || ^8.0",
         "symfony/dotenv": "^7.4 || ^8.0",
         "symfony/yaml": "^8.1"
     },
+    "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
             "ITKDev\\EntityBundle\\": "src/"
@@ -32,10 +35,10 @@
     },
     "config": {
         "allow-plugins": {
+            "ergebnis/composer-normalize": true,
             "symfony/flex": true,
             "symfony/runtime": true
         },
         "sort-packages": true
-    },
-    "minimum-stability": "stable"
+    }
 }

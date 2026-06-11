@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 final class ITKDevEntityDiscoveryTest extends TestCase
 {
-    public function testAttributeOnlyEntity_DiscoveredWithoutAbstractITKDevEntity(): void
+    public function testAttributeOnlyEntityDiscoveredWithoutAbstractITKDevEntity(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->prepend($container = $this->prependContainer());
@@ -28,7 +28,7 @@ final class ITKDevEntityDiscoveryTest extends TestCase
         );
     }
 
-    public function testAbstractITKDevEntitySubclasses_StillDiscovered(): void
+    public function testAbstractITKDevEntitySubclassesStillDiscovered(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->prepend($container = $this->prependContainer());
@@ -41,7 +41,7 @@ final class ITKDevEntityDiscoveryTest extends TestCase
         self::assertArrayHasKey(FixtureEntity::class, $entities);
     }
 
-    public function testUnmarkedEntities_NotInAuditorConfig(): void
+    public function testUnmarkedEntitiesNotInAuditorConfig(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->prepend($container = $this->prependContainer());

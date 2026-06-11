@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Definition;
 
 final class SoftDeleteConfigTest extends TestCase
 {
-    public function testDefaultsToDisabled_NoListenerService_NoDoctrineFilter(): void
+    public function testDefaultsToDisabledNoListenerServiceNoDoctrineFilter(): void
     {
         $container = $this->container();
         $config = ['user_class' => 'App\\Entity\\User'];
@@ -31,7 +31,7 @@ final class SoftDeleteConfigTest extends TestCase
         self::assertArrayNotHasKey('soft_delete', $filters, 'soft_delete Doctrine filter must not be prepended when disabled');
     }
 
-    public function testExplicitlyEnabled_RegistersListenerAndFilter(): void
+    public function testExplicitlyEnabledRegistersListenerAndFilter(): void
     {
         $container = $this->container();
         $config = [

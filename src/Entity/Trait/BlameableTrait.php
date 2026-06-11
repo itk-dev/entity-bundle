@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Entity\Trait;
 
-use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 trait BlameableTrait
 {

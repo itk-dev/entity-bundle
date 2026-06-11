@@ -43,3 +43,61 @@ tasks:
     desc: Run the full suite on PHP 8.5 against PostgreSQL 16
     cmds:
       - '{{.COMPOSE_POSTGRES_PHP85}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
+
+  lint:
+    desc: Run every CI lint check (php, composer, markdown, yaml)
+    cmds:
+      - task: lint:php
+      - task: lint:composer
+      - task: lint:markdown
+      - task: lint:yaml
+
+  lint:php:
+    desc: Check PHP code style (php-cs-fixer, dry-run)
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/php-cs-fixer fix --dry-run --diff'
+
+  lint:composer:
+    desc: Validate, normalize-check, and audit composer
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm composer validate --strict'
+      - '{{.COMPOSE}} run --rm phpfpm composer normalize --dry-run'
+      - '{{.COMPOSE}} run --rm phpfpm composer audit --locked'
+
+  lint:markdown:
+    desc: Lint Markdown files (markdownlint)
+    cmds:
+      - "{{.COMPOSE}} run --rm markdownlint markdownlint '**/*.md'"
+
+  lint:yaml:
+    desc: Check YAML formatting (prettier)
+    cmds:
+      - "{{.COMPOSE}} run --rm prettier '**/*.{yml,yaml}' --check"
+
+  fix:
+    desc: Apply every available auto-fixer (php, composer, markdown, yaml)
+    cmds:
+      - task: fix:php
+      - task: fix:composer
+      - task: fix:markdown
+      - task: fix:yaml
+
+  fix:php:
+    desc: Fix PHP code style (php-cs-fixer)
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/php-cs-fixer fix'
+
+  fix:composer:
+    desc: Normalize composer.json
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm composer normalize'
+
+  fix:markdown:
+    desc: Auto-fix Markdown (markdownlint --fix)
+    cmds:
+      - "{{.COMPOSE}} run --rm markdownlint markdownlint '**/*.md' --fix"
+
+  fix:yaml:
+    desc: Format YAML (prettier --write)
+    cmds:
+      - "{{.COMPOSE}} run --rm prettier '**/*.{yml,yaml}' --write"

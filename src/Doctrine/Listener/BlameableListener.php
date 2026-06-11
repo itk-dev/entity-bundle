@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Doctrine\Listener;
 
-use ITKDev\EntityBundle\Entity\Contract\BlameableInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
+use ITKDev\EntityBundle\Entity\Contract\BlameableInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 final readonly class BlameableListener
 {
@@ -28,11 +28,11 @@ final readonly class BlameableListener
                 continue;
             }
             $changed = false;
-            if ($entity->getCreatedBy() === null && $user !== null) {
+            if (null === $entity->getCreatedBy() && null !== $user) {
                 $entity->setCreatedBy($user);
                 $changed = true;
             }
-            if ($entity->getModifiedBy() === null && $user !== null) {
+            if (null === $entity->getModifiedBy() && null !== $user) {
                 $entity->setModifiedBy($user);
                 $changed = true;
             }

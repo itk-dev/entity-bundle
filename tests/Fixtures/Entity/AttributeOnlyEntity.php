@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Tests\Fixtures\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
 use ITKDev\EntityBundle\Attribute\ITKDevEntity;
 use ITKDev\EntityBundle\Audit\Attribute\Auditable;
-use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 
 /**

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace ITKDev\EntityBundle\Privacy;
 
 use Doctrine\ORM\EntityManagerInterface;
+use ITKDev\EntityBundle\Entity\Contract\IdentifiableInterface;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\User\UserInterface;
-use ITKDev\EntityBundle\Entity\Contract\IdentifiableInterface;
 
 final readonly class SubjectAnonymizer
 {
@@ -43,7 +43,7 @@ final readonly class SubjectAnonymizer
                 }
 
                 $userFks = $this->findUserFks($class);
-                if ($userFks === []) {
+                if ([] === $userFks) {
                     continue;
                 }
 

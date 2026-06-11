@@ -18,7 +18,7 @@ trait AnonymizationStatusTrait
 
     public function isAnonymized(): bool
     {
-        return $this->anonymizedAt !== null;
+        return null !== $this->anonymizedAt;
     }
 
     public function markAnonymized(\DateTimeImmutable $at): void

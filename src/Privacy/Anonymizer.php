@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Privacy;
 
-use ITKDev\EntityBundle\Entity\Contract\AnonymizationStatusInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use ITKDev\EntityBundle\Entity\Contract\AnonymizationStatusInterface;
 
 final readonly class Anonymizer
 {
@@ -24,7 +24,7 @@ final readonly class Anonymizer
     public function anonymize(object $entity): bool
     {
         $rules = $this->registry->rulesFor($entity::class);
-        if ($rules === []) {
+        if ([] === $rules) {
             return false;
         }
         if ($entity instanceof AnonymizationStatusInterface && $entity->isAnonymized()) {

@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 final class UserClassRequirementTest extends TestCase
 {
-    public function testEmptyConfig_NoUserClass_Loads(): void
+    public function testEmptyConfigNoUserClassLoads(): void
     {
         $container = $this->container();
         $extension = new ITKDevEntityExtension();
@@ -22,7 +22,7 @@ final class UserClassRequirementTest extends TestCase
         self::assertSame('', $container->getParameter('itk_dev_entity.user_class'));
     }
 
-    public function testEmptyConfig_NoResolveTargetEntitiesPrepended(): void
+    public function testEmptyConfigNoResolveTargetEntitiesPrepended(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->prepend($prepend = $this->prependContainer([]));
@@ -36,7 +36,7 @@ final class UserClassRequirementTest extends TestCase
         );
     }
 
-    public function testAuditEnabled_WithoutUserClass_Throws(): void
+    public function testAuditEnabledWithoutUserClassThrows(): void
     {
         $this->expectException(InvalidConfigurationException::class);
         $this->expectExceptionMessage('user_class is required when audit or blameable is enabled');
@@ -45,7 +45,7 @@ final class UserClassRequirementTest extends TestCase
         $extension->load([['audit' => ['enabled' => true]]], $this->container());
     }
 
-    public function testBlameableEnabled_WithoutUserClass_Throws(): void
+    public function testBlameableEnabledWithoutUserClassThrows(): void
     {
         $this->expectException(InvalidConfigurationException::class);
         $this->expectExceptionMessage('user_class is required when audit or blameable is enabled');
@@ -54,7 +54,7 @@ final class UserClassRequirementTest extends TestCase
         $extension->load([['blameable' => ['enabled' => true]]], $this->container());
     }
 
-    public function testAuditEnabled_WithUserClass_Loads(): void
+    public function testAuditEnabledWithUserClassLoads(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->load([[
@@ -65,7 +65,7 @@ final class UserClassRequirementTest extends TestCase
         self::assertSame('App\\Entity\\User', $container->getParameter('itk_dev_entity.user_class'));
     }
 
-    public function testUserClassSet_PrependsResolveTargetEntities(): void
+    public function testUserClassSetPrependsResolveTargetEntities(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->prepend($prepend = $this->prependContainer(['user_class' => 'App\\Entity\\User']));

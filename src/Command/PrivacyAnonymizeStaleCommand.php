@@ -44,7 +44,7 @@ final class PrivacyAnonymizeStaleCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $raw = $input->getOption('older-than');
 
-        if (!\is_string($raw) || $raw === '') {
+        if (!\is_string($raw) || '' === $raw) {
             $io->error('Option --older-than is required (ISO-8601 duration, e.g. P30D)');
 
             return Command::FAILURE;

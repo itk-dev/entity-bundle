@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Tests\Integration\Privacy;
 
-use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Clock\MockClock;

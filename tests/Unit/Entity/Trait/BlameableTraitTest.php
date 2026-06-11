@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Tests\Unit\Entity\Trait;
 
-use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
 use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
+use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
 use PHPUnit\Framework\TestCase;
 
 final class BlameableTraitTest extends TestCase

@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 final class ArchivableConfigTest extends TestCase
 {
-    public function testDefaultsToDisabled_NoDoctrineFilter(): void
+    public function testDefaultsToDisabledNoDoctrineFilter(): void
     {
         $config = ['user_class' => 'App\\Entity\\User'];
 
@@ -22,7 +22,7 @@ final class ArchivableConfigTest extends TestCase
         self::assertArrayNotHasKey('archivable', $filters, 'archivable Doctrine filter must not be prepended when disabled');
     }
 
-    public function testExplicitlyEnabled_RegistersFilterDisabledByDefault(): void
+    public function testExplicitlyEnabledRegistersFilterDisabledByDefault(): void
     {
         $config = [
             'user_class' => 'App\\Entity\\User',

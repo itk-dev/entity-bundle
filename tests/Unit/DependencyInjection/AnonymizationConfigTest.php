@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 final class AnonymizationConfigTest extends TestCase
 {
-    public function testDefaultsToDisabled_NoPrivacyServicesOrCommands(): void
+    public function testDefaultsToDisabledNoPrivacyServicesOrCommands(): void
     {
         $container = $this->container();
         $extension = new ITKDevEntityExtension();
@@ -30,7 +30,7 @@ final class AnonymizationConfigTest extends TestCase
         self::assertSame([], $container->getParameter('itk_dev_entity.anonymization_rules'));
     }
 
-    public function testExplicitlyEnabled_RegistersPrivacyServicesAndCommands(): void
+    public function testExplicitlyEnabledRegistersPrivacyServicesAndCommands(): void
     {
         $container = $this->container();
         $extension = new ITKDevEntityExtension();

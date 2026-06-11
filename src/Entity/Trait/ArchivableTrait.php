@@ -23,7 +23,7 @@ trait ArchivableTrait
 
     public function isArchived(): bool
     {
-        return $this->archivedAt !== null;
+        return null !== $this->archivedAt;
     }
 
     public function archive(\DateTimeImmutable $at): void

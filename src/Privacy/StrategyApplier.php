@@ -19,8 +19,8 @@ final readonly class StrategyApplier
         return match ($strategy) {
             Strategy::NullValue => null,
             Strategy::Redact => $replacement ?? '[REDACTED]',
-            Strategy::Hash => $value === null ? null : hash('sha256', (string) $value),
-            Strategy::Pseudonymize => $value === null
+            Strategy::Hash => null === $value ? null : hash('sha256', (string) $value),
+            Strategy::Pseudonymize => null === $value
                 ? null
                 : 'user_'.substr(sha1((string) $value.$this->pepper), 0, 12),
         };

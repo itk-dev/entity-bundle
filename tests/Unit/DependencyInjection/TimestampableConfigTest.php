@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 final class TimestampableConfigTest extends TestCase
 {
-    public function testDefaultsToDisabled_ListenerExcluded(): void
+    public function testDefaultsToDisabledListenerExcluded(): void
     {
         $container = $this->container();
         $extension = new ITKDevEntityExtension();
@@ -20,7 +20,7 @@ final class TimestampableConfigTest extends TestCase
         self::assertTrue($this->isExcluded($container), 'TimestampableListener must be excluded when timestampable is disabled');
     }
 
-    public function testExplicitlyEnabled_RegistersListener(): void
+    public function testExplicitlyEnabledRegistersListener(): void
     {
         $container = $this->container();
         $extension = new ITKDevEntityExtension();

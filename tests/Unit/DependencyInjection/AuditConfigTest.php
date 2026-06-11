@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 final class AuditConfigTest extends TestCase
 {
-    public function testDefaultsToDisabled_NoDhAuditorPrepended(): void
+    public function testDefaultsToDisabledNoDhAuditorPrepended(): void
     {
         $config = ['user_class' => 'App\\Entity\\User'];
 
@@ -20,7 +20,7 @@ final class AuditConfigTest extends TestCase
         self::assertSame([], $prepend->getExtensionConfig('dh_auditor'), 'dh_auditor must not be configured when audit is disabled');
     }
 
-    public function testExplicitlyEnabled_PrependsDhAuditor(): void
+    public function testExplicitlyEnabledPrependsDhAuditor(): void
     {
         $config = [
             'user_class' => 'App\\Entity\\User',

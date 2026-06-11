@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Tests\Fixtures\Entity;
 
-use ITKDev\EntityBundle\Entity\AbstractITKDevEntity;
 use Doctrine\ORM\Mapping as ORM;
+use ITKDev\EntityBundle\Entity\AbstractITKDevEntity;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'test_non_auditable_entity')]

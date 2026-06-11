@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Tests\Fixtures\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+use ITKDev\EntityBundle\Audit\Attribute\Auditable;
+use ITKDev\EntityBundle\Audit\Attribute\AuditIgnore;
 use ITKDev\EntityBundle\Entity\AbstractITKDevEntity;
 use ITKDev\EntityBundle\Entity\Contract\AnonymizationStatusInterface;
 use ITKDev\EntityBundle\Entity\Contract\ArchivableInterface;
@@ -15,21 +18,13 @@ use ITKDev\EntityBundle\Entity\Trait\ArchivableTrait;
 use ITKDev\EntityBundle\Entity\Trait\BlameableTrait;
 use ITKDev\EntityBundle\Entity\Trait\SoftDeletableTrait;
 use ITKDev\EntityBundle\Entity\Trait\TimestampableTrait;
-use ITKDev\EntityBundle\Audit\Attribute\AuditIgnore;
-use ITKDev\EntityBundle\Audit\Attribute\Auditable;
 use ITKDev\EntityBundle\Privacy\Attribute\Anonymize;
 use ITKDev\EntityBundle\Privacy\Strategy;
-use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'test_fixture_entity')]
 #[Auditable]
-class FixtureEntity extends AbstractITKDevEntity implements
-    TimestampableInterface,
-    BlameableInterface,
-    SoftDeletableInterface,
-    ArchivableInterface,
-    AnonymizationStatusInterface
+class FixtureEntity extends AbstractITKDevEntity implements TimestampableInterface, BlameableInterface, SoftDeletableInterface, ArchivableInterface, AnonymizationStatusInterface
 {
     use TimestampableTrait;
     use BlameableTrait;

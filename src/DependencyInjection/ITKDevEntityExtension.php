@@ -5,6 +5,15 @@ declare(strict_types=1);
 namespace ITKDev\EntityBundle\DependencyInjection;
 
 use Doctrine\ORM\Events;
+use ITKDev\EntityBundle\Attribute\ITKDevEntity;
+use ITKDev\EntityBundle\Audit\Attribute\Auditable;
+use ITKDev\EntityBundle\Audit\Attribute\AuditIgnore;
+use ITKDev\EntityBundle\Doctrine\Filter\ArchivableFilter;
+use ITKDev\EntityBundle\Doctrine\Filter\SoftDeleteFilter;
+use ITKDev\EntityBundle\Doctrine\Listener\BlameableListener;
+use ITKDev\EntityBundle\Doctrine\Listener\SoftDeleteListener;
+use ITKDev\EntityBundle\Doctrine\Listener\TimestampableListener;
+use ITKDev\EntityBundle\Privacy\Attribute\Anonymize;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Resource\DirectoryResource;
@@ -16,15 +25,6 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Security\Core\User\UserInterface;
-use ITKDev\EntityBundle\Attribute\ITKDevEntity;
-use ITKDev\EntityBundle\Audit\Attribute\AuditIgnore;
-use ITKDev\EntityBundle\Audit\Attribute\Auditable;
-use ITKDev\EntityBundle\Doctrine\Filter\ArchivableFilter;
-use ITKDev\EntityBundle\Doctrine\Filter\SoftDeleteFilter;
-use ITKDev\EntityBundle\Doctrine\Listener\BlameableListener;
-use ITKDev\EntityBundle\Doctrine\Listener\SoftDeleteListener;
-use ITKDev\EntityBundle\Doctrine\Listener\TimestampableListener;
-use ITKDev\EntityBundle\Privacy\Attribute\Anonymize;
 
 final class ITKDevEntityExtension extends Extension implements PrependExtensionInterface
 {
@@ -33,10 +33,8 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
         $config = $this->processConfiguration(new Configuration(), $configs);
 
         $requiresUserClass = $config['audit']['enabled'] || $config['blameable']['enabled'];
-        if ($requiresUserClass && ($config['user_class'] === null || $config['user_class'] === '')) {
-            throw new InvalidConfigurationException(
-                'itk_dev_entity.user_class is required when audit or blameable is enabled.',
-            );
+        if ($requiresUserClass && (null === $config['user_class'] || '' === $config['user_class'])) {
+            throw new InvalidConfigurationException('itk_dev_entity.user_class is required when audit or blameable is enabled.');
         }
 
         $container->setParameter('itk_dev_entity.user_class', $config['user_class'] ?? '');
@@ -101,7 +99,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
         }
 
         $ormConfig = ['filters' => $filters];
-        if ($config['user_class'] !== null && $config['user_class'] !== '') {
+        if (null !== $config['user_class'] && '' !== $config['user_class']) {
             $ormConfig['resolve_target_entities'] = [
                 UserInterface::class => $config['user_class'],
             ];
@@ -116,14 +114,14 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
         $entities = $this->discoverEntities($container, $config['entity_paths']);
         $auditable = array_values(array_filter(
             $entities,
-            static fn (string $class): bool => (new \ReflectionClass($class))->getAttributes(Auditable::class) !== [],
+            static fn (string $class): bool => [] !== (new \ReflectionClass($class))->getAttributes(Auditable::class),
         ));
         foreach ($config['audit']['entities'] as $extra) {
             if (!\in_array($extra, $auditable, true)) {
                 $auditable[] = $extra;
             }
         }
-        if ($auditable === []) {
+        if ([] === $auditable) {
             return;
         }
 
@@ -136,7 +134,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
                     $ignored[] = $prop;
                 }
             }
-            $entityConfig[$class] = $ignored === [] ? null : ['ignored_columns' => $ignored];
+            $entityConfig[$class] = [] === $ignored ? null : ['ignored_columns' => $ignored];
         }
 
         $container->prependExtensionConfig('dh_auditor', [
@@ -154,7 +152,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
      * For the same property name, the config wins (it's the explicit override).
      *
      * @param array<class-string, list<array{property: string, strategy: string, replacement: ?string}>> $discovered
-     * @param array<string, array<string, array{strategy: string, replacement?: ?string}>>             $configRules
+     * @param array<string, array<string, array{strategy: string, replacement?: ?string}>>               $configRules
      *
      * @return array<class-string, list<array{property: string, strategy: string, replacement: ?string}>>
      */
@@ -168,11 +166,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
             }
             foreach ($propRules as $property => $spec) {
                 if (!\is_array($spec) || !isset($spec['strategy'])) {
-                    throw new InvalidConfigurationException(sprintf(
-                        'itk_dev_entity.anonymization.rules[%s][%s] must be { strategy: ..., replacement?: ... }',
-                        $class,
-                        $property,
-                    ));
+                    throw new InvalidConfigurationException(sprintf('itk_dev_entity.anonymization.rules[%s][%s] must be { strategy: ..., replacement?: ... }', $class, $property));
                 }
                 $byProp[$property] = [
                     'property' => $property,
@@ -199,7 +193,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
 
         $ignored = [];
         foreach ((new \ReflectionClass($class))->getProperties() as $prop) {
-            if ($prop->getAttributes(AuditIgnore::class) !== []) {
+            if ([] !== $prop->getAttributes(AuditIgnore::class)) {
                 $ignored[] = $prop->getName();
             }
         }
@@ -227,7 +221,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
 
             foreach ((new Finder())->files()->in($resolved)->name('*.php') as $file) {
                 $class = $this->resolveClassNameFromFile($file->getRealPath());
-                if ($class === null || !class_exists($class)) {
+                if (null === $class || !class_exists($class)) {
                     continue;
                 }
                 $ref = new \ReflectionClass($class);
@@ -250,8 +244,8 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
      */
     private function hasITKDevEntityAttribute(\ReflectionClass $ref): bool
     {
-        for ($cur = $ref; $cur !== false; $cur = $cur->getParentClass()) {
-            if ($cur->getAttributes(ITKDevEntity::class) !== []) {
+        for ($cur = $ref; false !== $cur; $cur = $cur->getParentClass()) {
+            if ([] !== $cur->getAttributes(ITKDevEntity::class)) {
                 return true;
             }
         }
@@ -266,7 +260,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
     private function resolveClassNameFromFile(string $file): ?string
     {
         $src = @file_get_contents($file);
-        if ($src === false) {
+        if (false === $src) {
             return null;
         }
         if (!preg_match('/^namespace\s+([^;]+);/m', $src, $nsMatch)) {
@@ -292,7 +286,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
             $classRules = [];
             foreach ($ref->getProperties() as $prop) {
                 $attrs = $prop->getAttributes(Anonymize::class);
-                if ($attrs === []) {
+                if ([] === $attrs) {
                     continue;
                 }
                 $attr = $attrs[0]->newInstance();
@@ -302,7 +296,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
                     'replacement' => $attr->replacement,
                 ];
             }
-            if ($classRules !== []) {
+            if ([] !== $classRules) {
                 $rules[$class] = $classRules;
             }
         }

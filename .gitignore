@@ -3,3 +3,4 @@
 /.phpunit.cache/
 /phpunit.xml
 /var/
+.php-cs-fixer.cache

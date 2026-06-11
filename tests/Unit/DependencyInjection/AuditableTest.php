@@ -30,7 +30,7 @@ final class AuditableTest extends TestCase
         );
     }
 
-    public function testNoAuditableEntities_DhAuditorNotPrepended(): void
+    public function testNoAuditableEntitiesDhAuditorNotPrepended(): void
     {
         $extension = new ITKDevEntityExtension();
         // Point at a path with no #[Auditable] entities.

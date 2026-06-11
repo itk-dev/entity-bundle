@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Doctrine\Listener;
 
-use ITKDev\EntityBundle\Entity\Contract\TimestampableInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
+use ITKDev\EntityBundle\Entity\Contract\TimestampableInterface;
 use Psr\Clock\ClockInterface;
 
 final readonly class TimestampableListener

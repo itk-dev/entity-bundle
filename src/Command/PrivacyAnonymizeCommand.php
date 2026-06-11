@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ITKDev\EntityBundle\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
+use ITKDev\EntityBundle\Entity\Contract\IdentifiableInterface;
+use ITKDev\EntityBundle\Privacy\SubjectAnonymizer;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -14,8 +16,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Ulid;
-use ITKDev\EntityBundle\Entity\Contract\IdentifiableInterface;
-use ITKDev\EntityBundle\Privacy\SubjectAnonymizer;
 
 #[AsCommand(
     name: 'privacy:anonymize',
@@ -44,7 +44,7 @@ final class PrivacyAnonymizeCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        if ($this->userClass === '') {
+        if ('' === $this->userClass) {
             $io->error('privacy:anonymize requires itk_dev_entity.user_class to be configured.');
 
             return Command::FAILURE;

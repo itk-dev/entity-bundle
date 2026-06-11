@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Tests\Integration\Privacy;
 
-use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
-use ITKDev\EntityBundle\Privacy\SubjectAnonymizer;
-use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
 use DH\Auditor\Provider\Doctrine\Persistence\Reader\Reader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use ITKDev\EntityBundle\Privacy\SubjectAnonymizer;
+use ITKDev\EntityBundle\Tests\Fixtures\Entity\FixtureEntity;
+use ITKDev\EntityBundle\Tests\Fixtures\Entity\TestUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;

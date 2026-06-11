@@ -27,7 +27,7 @@ final readonly class AuditScrubber
      */
     public function scrubEntityHistory(object $entity, array $rules): void
     {
-        if ($rules === []) {
+        if ([] === $rules) {
             return;
         }
 
@@ -59,7 +59,7 @@ final readonly class AuditScrubber
                     if (!\array_key_exists($side, $diffs[$key])) {
                         continue;
                     }
-                    if ($diffs[$key][$side] === null) {
+                    if (null === $diffs[$key][$side]) {
                         continue;
                     }
                     $diffs[$key][$side] = $this->strategyApplier->apply(
@@ -172,7 +172,7 @@ final readonly class AuditScrubber
                     $shape[$side] = null;
                 }
             }
-            $out[$field] = $shape !== [] ? $shape : $value;
+            $out[$field] = [] !== $shape ? $shape : $value;
         }
 
         return $out;

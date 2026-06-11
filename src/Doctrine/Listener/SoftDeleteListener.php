@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ITKDev\EntityBundle\Doctrine\Listener;
 
-use ITKDev\EntityBundle\Entity\Contract\SoftDeletableInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\UnitOfWork;
+use ITKDev\EntityBundle\Entity\Contract\SoftDeletableInterface;
 use Psr\Clock\ClockInterface;
 
 final readonly class SoftDeleteListener

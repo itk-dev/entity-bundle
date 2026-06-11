@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 final class ThirdPartyOverrideTest extends TestCase
 {
-    public function testAuditEntitiesConfig_AddsThirdPartyClass(): void
+    public function testAuditEntitiesConfigAddsThirdPartyClass(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->prepend($container = $this->prependContainer([
@@ -29,7 +29,7 @@ final class ThirdPartyOverrideTest extends TestCase
         self::assertNull($entities['Vendor\\Bundle\\Entity\\Thing']);
     }
 
-    public function testAuditIgnoredColumnsConfig_AppliesToThirdPartyClass(): void
+    public function testAuditIgnoredColumnsConfigAppliesToThirdPartyClass(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->prepend($container = $this->prependContainer([
@@ -51,7 +51,7 @@ final class ThirdPartyOverrideTest extends TestCase
         );
     }
 
-    public function testAuditIgnoredColumnsConfig_MergesWithAttributeDiscovery(): void
+    public function testAuditIgnoredColumnsConfigMergesWithAttributeDiscovery(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->prepend($container = $this->prependContainer([
@@ -70,7 +70,7 @@ final class ThirdPartyOverrideTest extends TestCase
         self::assertSame(['ignored_columns' => ['secret', 'label']], $entities[FixtureEntity::class]);
     }
 
-    public function testAnonymizationRulesConfig_AddsRulesForThirdPartyClass(): void
+    public function testAnonymizationRulesConfigAddsRulesForThirdPartyClass(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->load([[
@@ -97,7 +97,7 @@ final class ThirdPartyOverrideTest extends TestCase
         );
     }
 
-    public function testAnonymizationRulesConfig_OverridesAttributeForSameProperty(): void
+    public function testAnonymizationRulesConfigOverridesAttributeForSameProperty(): void
     {
         $extension = new ITKDevEntityExtension();
         $extension->load([[
@@ -123,7 +123,7 @@ final class ThirdPartyOverrideTest extends TestCase
         self::assertSame('null', $byProp['label']);
     }
 
-    public function testAnonymizationRulesConfig_RejectsMalformedSpec(): void
+    public function testAnonymizationRulesConfigRejectsMalformedSpec(): void
     {
         $this->expectException(InvalidConfigurationException::class);
 
