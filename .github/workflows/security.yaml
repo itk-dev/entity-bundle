@@ -1,0 +1,36 @@
+name: Security
+
+env:
+  COMPOSE_USER: runner
+
+on:
+  pull_request:
+    paths:
+      - "composer.json"
+      - "docker-compose.yml"
+      - ".github/workflows/security.yaml"
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "composer.json"
+      - "docker-compose.yml"
+      - ".github/workflows/security.yaml"
+  schedule:
+    # Weekly run picks up newly-published advisories against unchanged deps.
+    - cron: "17 6 * * 1"
+
+jobs:
+  composer-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create docker network
+        run: |
+          docker network create frontend
+
+      - run: |
+          docker compose run --rm --no-deps phpfpm composer install
+          docker compose run --rm --no-deps phpfpm composer audit
