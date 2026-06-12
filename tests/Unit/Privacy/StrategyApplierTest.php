@@ -33,9 +33,12 @@ final class StrategyApplierTest extends TestCase
         self::assertSame('[GONE]', $this->applier->apply(Strategy::Redact, 'value', '[GONE]'));
     }
 
-    public function testHashOfNonNullValue(): void
+    public function testHashOfNonNullValueIsHex(): void
     {
-        self::assertSame(hash('sha256', 'value'.'test-pepper'), $this->applier->apply(Strategy::Hash, 'value'));
+        $result = $this->applier->apply(Strategy::Hash, 'value');
+
+        self::assertIsString($result);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $result);
     }
 
     public function testHashOfNullReturnsNull(): void
@@ -43,8 +46,19 @@ final class StrategyApplierTest extends TestCase
         self::assertNull($this->applier->apply(Strategy::Hash, null));
     }
 
-    public function testHashIsPepperDependent(): void
+    public function testHashIsNonDeterministic(): void
     {
+        $a = $this->applier->apply(Strategy::Hash, 'alice@example.com');
+        $b = $this->applier->apply(Strategy::Hash, 'alice@example.com');
+
+        self::assertNotSame($a, $b);
+    }
+
+    public function testHashIsUnlinkableToSource(): void
+    {
+        // Same source value across two different appliers (different peppers)
+        // must still produce unrelated outputs — Hash does not depend on the
+        // pepper, so determinism cannot leak via shared deployment secrets.
         $other = new StrategyApplier('different-pepper');
 
         self::assertNotSame(

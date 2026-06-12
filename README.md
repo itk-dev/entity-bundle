@@ -346,8 +346,7 @@ class User extends AbstractITKDevEntity implements AnonymizationStatusInterface
 ```
 
 Each PII field gets `#[ITKDev\EntityBundle\Privacy\Attribute\Anonymize(strategy: Strategy::Redact)]`. Strategies:
-`NullValue`, `Redact`, `Hash`, `Pseudonymize` (sha1 with a `kernel.secret`-derived pepper). The bundle scans these at
-compile time and ships two console commands:
+`NullValue`, `Redact`, `Hash`, `Pseudonymize`. The bundle scans these at compile time and ships two console commands:
 
 - `bin/console privacy:anonymize <subjectUlid>` — right-to-erasure: scrubs PII on the subject's User row + every row
   that references them via a `ManyToOne(UserInterface)` association, plus rewrites the corresponding audit history.
@@ -357,6 +356,19 @@ compile time and ships two console commands:
   (`itk_dev_entity.audit.retention`, default `P1Y`, with per-entity overrides). Idempotent.
 
 The mechanism is law-neutral; the same machinery applies to GDPR, CCPA, LGPD, PIPEDA, etc.
+
+### GDPR semantics of strategies
+
+Not every strategy produces anonymous data. Pick deliberately:
+
+- `NullValue`, `Redact`, `Hash` — **anonymization.** Output is unlinkable to the source value and to other rows
+  scrubbed with the same strategy (`Hash` returns a fresh `random_bytes(32)`-derived token per call). Once applied, the
+  resulting column is no longer personal data.
+- `Pseudonymize` — **pseudonymization.** Output is a deterministic short token derived from the cleartext and
+  `kernel.secret`, so rows that shared a value still collide post-scrubbing. Use this when you need to preserve
+  referential equality (e.g. correlating activity across tables) without retaining the cleartext. Under GDPR
+  Recital 26 the result is **still personal data** — apply the same access controls as you would to the cleartext, and
+  do not export it as "anonymized."
 
 ## Configuration
 
