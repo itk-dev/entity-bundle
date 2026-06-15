@@ -22,7 +22,7 @@ final class ArchivableConfigTest extends TestCase
         self::assertArrayNotHasKey('archivable', $filters, 'archivable Doctrine filter must not be prepended when disabled');
     }
 
-    public function testExplicitlyEnabledRegistersFilterDisabledByDefault(): void
+    public function testExplicitlyEnabledRegistersFilterEnabledByDefault(): void
     {
         $config = [
             'user_class' => 'App\\Entity\\User',
@@ -35,7 +35,7 @@ final class ArchivableConfigTest extends TestCase
         $doctrine = $prepend->getExtensionConfig('doctrine');
         $filters = $doctrine[0]['orm']['filters'] ?? [];
         self::assertArrayHasKey('archivable', $filters);
-        self::assertFalse($filters['archivable']['enabled'], 'archivable filter is registered disabled so it can be toggled per-request');
+        self::assertTrue($filters['archivable']['enabled'], 'archivable filter is registered enabled so archived rows are hidden by default; disable per-request to reveal');
     }
 
     /** @param array<string, mixed> $config */

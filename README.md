@@ -160,9 +160,9 @@ itk_dev_entity:
     enabled: true
 ```
 
-`$entity->archive($at)` sets `archivedAt`. The `archivable` SQL filter is registered **disabled** — toggle it
-per-request (typically via a `?showArchived=1` listener that calls `$em->getFilters()->enable('archivable')`) to hide
-archived rows from `findAll`/`find`.
+`$entity->archive($at)` sets `archivedAt`. The `archivable` SQL filter is registered **enabled**, so archived rows
+are hidden from `findAll`/`find` by default. Disable it per-request (typically via a `?showArchived=1` listener that
+calls `$em->getFilters()->disable('archivable')`) when you want archived rows to appear.
 
 If `archivable.enabled` is left off, the filter is never registered — entities that use `ArchivableTrait` will still
 have the `archived_at` column and the `archive()`/`unarchive()` methods, but enabling the filter will throw.
@@ -406,7 +406,7 @@ itk_dev_entity:
 | `audit.retention`           | ISO-8601 duration        | `P1Y`                                 | Default retention past which audit rows are scrubbed by `privacy:anonymize-stale`.                                                                                                                                                                                                        |
 | `audit.retention_overrides` | map&lt;FQCN, ISO8601&gt; | `[]`                                  | Per-entity overrides.                                                                                                                                                                                                                                                                     |
 | `soft_delete.enabled`       | bool                     | `false`                               | Register `SoftDeleteListener` (intercepts `remove()`) and the `soft_delete` Doctrine filter. Entities still opt in by implementing `SoftDeletableInterface` and using `SoftDeletableTrait`.                                                                                               |
-| `archivable.enabled`        | bool                     | `false`                               | Register the `archivable` Doctrine filter (registered disabled; toggle per-request). Entities still opt in by implementing `ArchivableInterface` and using `ArchivableTrait`.                                                                                                             |
+| `archivable.enabled`        | bool                     | `false`                               | Register the `archivable` Doctrine filter (registered enabled; hides archived rows by default; disable per-request to reveal them). Entities still opt in by implementing `ArchivableInterface` and using `ArchivableTrait`.                                                              |
 | `timestampable.enabled`     | bool                     | `false`                               | Register `TimestampableListener` (sets `createdAt`/`updatedAt`). Entities still opt in by implementing `TimestampableInterface` and using `TimestampableTrait`.                                                                                                                           |
 | `blameable.enabled`         | bool                     | `false`                               | Register `BlameableListener` (sets `createdBy`/`modifiedBy` from the security token). Entities still opt in by implementing `BlameableInterface` and using `BlameableTrait`.                                                                                                              |
 | `anonymization.enabled`     | bool                     | `false`                               | Discover `#[Anonymize]` property attributes, register privacy services, and expose the `privacy:anonymize` and `privacy:anonymize-stale` commands. Entities still opt in by implementing `AnonymizationStatusInterface`, using `AnonymizationStatusTrait`, and annotating PII properties. |

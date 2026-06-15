@@ -89,7 +89,7 @@ final class ITKDevEntityExtension extends Extension implements PrependExtensionI
         if ($config['archivable']['enabled']) {
             $filters['archivable'] = [
                 'class' => ArchivableFilter::class,
-                'enabled' => false,
+                'enabled' => true,
             ];
         }
         if ($config['soft_delete']['enabled']) {

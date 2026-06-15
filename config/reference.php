@@ -1248,7 +1248,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         enabled?: bool|Param, // When true, registers the soft_delete Doctrine filter and listener. Entities still opt in by implementing SoftDeletableInterface and using SoftDeletableTrait. // Default: false
  *     },
  *     archivable?: array{
- *         enabled?: bool|Param, // When true, registers the archivable Doctrine filter (registered disabled; toggle per-request via $em->getFilters()->enable('archivable')). Entities still opt in by implementing ArchivableInterface and using ArchivableTrait. // Default: false
+ *         enabled?: bool|Param, // When true, registers the archivable Doctrine filter (registered enabled; archived rows are hidden by default — disable per-request via $em->getFilters()->disable('archivable') to reveal them). Entities still opt in by implementing ArchivableInterface and using ArchivableTrait. // Default: false
  *     },
  *     timestampable?: array{
  *         enabled?: bool|Param, // When true, registers the onFlush listener that sets createdAt/updatedAt. Entities still opt in by implementing TimestampableInterface and using TimestampableTrait. // Default: false

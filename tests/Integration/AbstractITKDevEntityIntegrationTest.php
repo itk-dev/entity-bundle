@@ -152,18 +152,19 @@ final class AbstractITKDevEntityIntegrationTest extends IntegrationTestCase
         $this->em->flush();
         $this->em->clear();
 
-        // soft_delete on (default), archivable off (default) -> live + archivedOnly visible.
+        // Both filters on (default) -> only `live`.
+        $visible = $this->labelsOf($this->em->getRepository(FixtureEntity::class)->findAll());
+        self::assertSame(['live'], $visible);
+
+        // soft_delete on, archivable off -> live + archived.
+        $this->em->getFilters()->disable('archivable');
+        $this->em->clear();
         $visible = $this->labelsOf($this->em->getRepository(FixtureEntity::class)->findAll());
         sort($visible);
         self::assertSame(['archived', 'live'], $visible);
 
-        // Both filters on -> only `live`.
-        $this->em->getFilters()->enable('archivable');
-        $this->em->clear();
-        $visible = $this->labelsOf($this->em->getRepository(FixtureEntity::class)->findAll());
-        self::assertSame(['live'], $visible);
-
         // soft_delete off, archivable on -> live + soft-deleted.
+        $this->em->getFilters()->enable('archivable');
         $this->em->getFilters()->disable('soft_delete');
         $this->em->clear();
         $visible = $this->labelsOf($this->em->getRepository(FixtureEntity::class)->findAll());
@@ -223,7 +224,7 @@ final class AbstractITKDevEntityIntegrationTest extends IntegrationTestCase
         self::assertNull($found, 'second remove() should hard-delete an already soft-deleted row');
     }
 
-    public function testArchivableFilterHidesArchivedRowsWhenEnabled(): void
+    public function testArchivableFilterHidesArchivedRowsByDefault(): void
     {
         $live = new FixtureEntity();
         $live->setLabel('live');
@@ -236,16 +237,16 @@ final class AbstractITKDevEntityIntegrationTest extends IntegrationTestCase
         $this->em->flush();
         $this->em->clear();
 
-        // Filter disabled by default — both visible
-        $all = $this->em->getRepository(FixtureEntity::class)->findAll();
-        self::assertCount(2, $all);
-
-        // Enable filter — only live row visible
-        $this->em->getFilters()->enable('archivable');
-        $this->em->clear();
+        // Filter enabled by default — only live row visible
         $visible = $this->em->getRepository(FixtureEntity::class)->findAll();
         self::assertCount(1, $visible);
         self::assertSame('live', $visible[0]->getLabel());
+
+        // Disable filter — both rows visible
+        $this->em->getFilters()->disable('archivable');
+        $this->em->clear();
+        $all = $this->em->getRepository(FixtureEntity::class)->findAll();
+        self::assertCount(2, $all);
     }
 
     public function testArchivableFilterReturnsNoConstraintForNonArchivableEntity(): void
