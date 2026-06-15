@@ -1,0 +1,35 @@
+name: PHPStan
+
+env:
+  COMPOSE_USER: runner
+
+on:
+  pull_request:
+    paths: &paths
+      - "**/*.php"
+      - "phpstan.neon"
+      - "phpstan.neon.dist"
+      - "phpstan-baseline.neon"
+      - "composer.json"
+      - "composer.lock"
+      - "docker-compose.yml"
+  push:
+    branches:
+      - main
+      - develop
+    paths: *paths
+
+jobs:
+  phpstan:
+    name: PHP - Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create docker network
+        run: |
+          docker network create frontend
+
+      - run: |
+          docker compose run --rm phpfpm composer install
+          docker compose run --rm phpfpm vendor/bin/phpstan analyse --no-progress

@@ -1,0 +1,108 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ITKDev\EntityBundle\DependencyInjection;
+
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
+
+final class Configuration implements ConfigurationInterface
+{
+    public function getConfigTreeBuilder(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('itk_dev_entity');
+
+        $treeBuilder->getRootNode()
+            ->children()
+                ->scalarNode('user_class')
+                    ->defaultNull()
+                    ->info('FQCN of the consumer application User entity (must implement UserInterface). Required when audit or blameable is enabled, otherwise optional.')
+                ->end()
+                ->arrayNode('entity_paths')
+                    ->scalarPrototype()->end()
+                    ->defaultValue(['%kernel.project_dir%/src/Entity'])
+                    ->info('Directories scanned for AbstractITKDevEntity subclasses (audit + anonymization auto-discovery).')
+                ->end()
+                ->arrayNode('audit')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('enabled')
+                            ->defaultFalse()
+                            ->info('When true, registers discovered entities with damienharper/auditor-bundle and exposes the privacy:anonymize-stale audit-scrubbing behavior.')
+                        ->end()
+                        ->scalarNode('retention')
+                            ->defaultValue('P1Y')
+                            ->info('Default ISO-8601 duration past which audit rows are scrubbed.')
+                        ->end()
+                        ->arrayNode('retention_overrides')
+                            ->scalarPrototype()->end()
+                            ->defaultValue([])
+                            ->info('Per-entity overrides (class FQCN => ISO duration).')
+                        ->end()
+                        ->arrayNode('entities')
+                            ->scalarPrototype()->end()
+                            ->defaultValue([])
+                            ->info('Additional entity classes to audit, beyond those marked with #[Auditable]. Use for third-party entities you can not annotate.')
+                        ->end()
+                        ->variableNode('ignored_columns')
+                            ->defaultValue([])
+                            ->info('Per-class properties to skip when auditing (FQCN => [property, ...]). Additive to #[AuditIgnore]; use for third-party entities you can not annotate.')
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('soft_delete')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('enabled')
+                            ->defaultFalse()
+                            ->info('When true, registers the soft_delete Doctrine filter and listener. Entities still opt in by implementing SoftDeletableInterface and using SoftDeletableTrait.')
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('archivable')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('enabled')
+                            ->defaultFalse()
+                            ->info('When true, registers the archivable Doctrine filter (registered enabled; archived rows are hidden by default — disable per-request via $em->getFilters()->disable(\'archivable\') to reveal them). Entities still opt in by implementing ArchivableInterface and using ArchivableTrait.')
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('timestampable')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('enabled')
+                            ->defaultFalse()
+                            ->info('When true, registers the onFlush listener that sets createdAt/updatedAt. Entities still opt in by implementing TimestampableInterface and using TimestampableTrait.')
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('blameable')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('enabled')
+                            ->defaultFalse()
+                            ->info('When true, registers the onFlush listener that sets createdBy/modifiedBy from the security token. Entities still opt in by implementing BlameableInterface and using BlameableTrait.')
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('anonymization')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('enabled')
+                            ->defaultFalse()
+                            ->info('When true, discovers #[Anonymize] property attributes, registers privacy services, and exposes the privacy:anonymize and privacy:anonymize-stale commands. Entities still opt in by implementing AnonymizationStatusInterface, using AnonymizationStatusTrait, and annotating PII properties with #[Anonymize].')
+                        ->end()
+                        ->variableNode('rules')
+                            ->defaultValue([])
+                            ->info('Per-class anonymization rules (FQCN => { property: { strategy: null|redact|hash|pseudonymize, replacement?: string } }). Additive to #[Anonymize]; config wins when both name the same property. Use for third-party entities you can not annotate.')
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+
+        return $treeBuilder;
+    }
+}

@@ -1,0 +1,68 @@
+# itk-version: 3.2.4
+networks:
+  frontend:
+    external: true
+  app:
+    driver: bridge
+    internal: false
+
+services:
+  database:
+    image: mariadb:11.4
+    networks:
+      - app
+    ports:
+      - "3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_USER=db
+      - MYSQL_PASSWORD=db
+      - MYSQL_DATABASE=db
+      #- ENCRYPT=1 # Uncomment to enable database encryption.
+    volumes:
+      - mariadb-data:/var/lib/mysql
+
+  phpfpm:
+    image: itkdev/php8.4-fpm:latest
+    user: ${COMPOSE_USER:-deploy}
+    networks:
+      - app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - PHP_XDEBUG_MODE=${PHP_XDEBUG_MODE:-off}
+      - PHP_MAX_EXECUTION_TIME=30
+      - PHP_MEMORY_LIMIT=256M
+      - PHP_SENDMAIL_PATH=/usr/bin/msmtp --host=mail --port=1025 --read-recipients --read-envelope-from
+      - DOCKER_HOST_DOMAIN=${COMPOSE_DOMAIN:?}
+      - PHP_IDE_CONFIG=serverName=localhost
+      - COMPOSER_CACHE_DIR=/app/var/composer-cache
+    volumes:
+      - .:/app
+
+  # Code checks tools
+  markdownlint:
+    image: itkdev/markdownlint
+    profiles:
+      - dev
+    volumes:
+      - ./:/md
+
+  prettier:
+    image: jauderho/prettier
+    profiles:
+      - dev
+    volumes:
+      - ./:/work
+
+volumes:
+  mariadb-data:

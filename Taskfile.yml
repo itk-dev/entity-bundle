@@ -1,0 +1,115 @@
+# https://taskfile.dev
+version: '3'
+
+vars:
+  COMPOSE: 'docker compose'
+  COMPOSE_POSTGRES: 'docker compose -f docker-compose.yml -f docker-compose.postgres.yml'
+  COMPOSE_PHP85: 'docker compose -f docker-compose.yml -f docker-compose.php85.yml'
+  COMPOSE_POSTGRES_PHP85: 'docker compose -f docker-compose.yml -f docker-compose.postgres.yml -f docker-compose.php85.yml'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  test:
+    desc: Run the full PHPUnit suite (MariaDB 11.4, PHP 8.4)
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
+
+  test:unit:
+    desc: Run the Unit suite only
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/phpunit tests/Unit {{.CLI_ARGS}}'
+
+  test:integration:
+    desc: Run the Integration suite only
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/phpunit tests/Integration {{.CLI_ARGS}}'
+
+  test:postgres:
+    desc: Run the full suite against PostgreSQL 16
+    cmds:
+      - '{{.COMPOSE_POSTGRES}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
+
+  test:php85:
+    desc: Run the full suite on PHP 8.5
+    cmds:
+      - '{{.COMPOSE_PHP85}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
+
+  test:postgres:php85:
+    desc: Run the full suite on PHP 8.5 against PostgreSQL 16
+    cmds:
+      - '{{.COMPOSE_POSTGRES_PHP85}} run --rm phpfpm vendor/bin/phpunit {{.CLI_ARGS}}'
+
+  test:coverage:
+    desc: Run PHPUnit with coverage and enforce the 100% line gate
+    cmds:
+      - '{{.COMPOSE}} run -e XDEBUG_MODE=coverage --rm phpfpm vendor/bin/phpunit --coverage-clover=coverage/clover.xml {{.CLI_ARGS}}'
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/coverage-check coverage/clover.xml 100'
+
+  lint:
+    desc: Run every CI lint check (php, phpstan, composer, markdown, yaml)
+    cmds:
+      - task: lint:php
+      - task: lint:phpstan
+      - task: lint:composer
+      - task: lint:markdown
+      - task: lint:yaml
+
+  lint:php:
+    desc: Check PHP code style (php-cs-fixer, dry-run)
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/php-cs-fixer fix --dry-run --diff'
+
+  lint:phpstan:
+    desc: Static analysis (phpstan, level 8)
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/phpstan analyse --no-progress'
+
+  lint:composer:
+    desc: Validate, normalize-check, and audit composer
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm composer validate --strict'
+      - '{{.COMPOSE}} run --rm phpfpm composer normalize --dry-run'
+      - '{{.COMPOSE}} run --rm phpfpm composer audit --locked'
+
+  lint:markdown:
+    desc: Lint Markdown files (markdownlint)
+    cmds:
+      - "{{.COMPOSE}} run --rm markdownlint markdownlint '**/*.md'"
+
+  lint:yaml:
+    desc: Check YAML formatting (prettier)
+    cmds:
+      - "{{.COMPOSE}} run --rm prettier '**/*.{yml,yaml}' --check"
+
+  fix:
+    desc: Apply every available auto-fixer (php, composer, markdown, yaml)
+    cmds:
+      - task: fix:php
+      - task: fix:composer
+      - task: fix:markdown
+      - task: fix:yaml
+
+  fix:php:
+    desc: Fix PHP code style (php-cs-fixer)
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm vendor/bin/php-cs-fixer fix'
+
+  fix:composer:
+    desc: Normalize composer.json
+    cmds:
+      - '{{.COMPOSE}} run --rm phpfpm composer normalize'
+
+  fix:markdown:
+    desc: Auto-fix Markdown (markdownlint --fix)
+    cmds:
+      - "{{.COMPOSE}} run --rm markdownlint markdownlint '**/*.md' --fix"
+
+  fix:yaml:
+    desc: Format YAML (prettier --write)
+    cmds:
+      - "{{.COMPOSE}} run --rm prettier '**/*.{yml,yaml}' --write"

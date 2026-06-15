@@ -1,0 +1,11 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - tests/App/var/*
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    symfony:
+        containerXmlPath: var/cache/test/ITKDev_EntityBundle_Tests_App_KernelTestDebugContainer.xml

@@ -1,0 +1,18 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ITKDev\EntityBundle\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Doctrine/Filter/'
+            - '../src/Doctrine/Listener/SoftDeleteListener.php'
+            - '../src/Doctrine/Listener/TimestampableListener.php'
+            - '../src/Doctrine/Listener/BlameableListener.php'
+            - '../src/Privacy/'
+            - '../src/Command/'
+            - '../src/*Bundle.php'
