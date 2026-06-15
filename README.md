@@ -355,9 +355,9 @@ Each PII field gets `#[ITKDev\EntityBundle\Privacy\Attribute\Anonymize(strategy:
   than `--older-than` (based on `createdAt`) AND scrubs audit rows older than the configured retention
   (`itk_dev_entity.audit.retention`, default `P1Y`, with per-entity overrides). Idempotent.
 
-The mechanism is law-neutral; the same machinery applies to GDPR, CCPA, LGPD, PIPEDA, etc.
+The mechanism is regime-neutral and applies to most privacy laws that recognise a right to erasure.
 
-### GDPR semantics of strategies
+### Anonymization vs. pseudonymization
 
 Not every strategy produces anonymous data. Pick deliberately:
 
@@ -366,9 +366,25 @@ Not every strategy produces anonymous data. Pick deliberately:
   resulting column is no longer personal data.
 - `Pseudonymize` — **pseudonymization.** Output is a deterministic short token derived from the cleartext and
   `kernel.secret`, so rows that shared a value still collide post-scrubbing. Use this when you need to preserve
-  referential equality (e.g. correlating activity across tables) without retaining the cleartext. Under GDPR
-  Recital 26 the result is **still personal data** — apply the same access controls as you would to the cleartext, and
-  do not export it as "anonymized."
+  referential equality (e.g. correlating activity across tables) without retaining the cleartext. Under most privacy
+  regimes the result is **still personal data** — apply the same access controls as you would to the cleartext, and do
+  not export it as "anonymized."
+
+### Limitation: free-text fields containing PII
+
+Strategies operate on the **whole value** of an annotated property — they rewrite a column, not substrings inside it.
+If a host app stores the subject's name, email, or other identifier inside a free-text column (`notes`, `description`,
+`comment`, …), that text is still personal data and is in scope for erasure under most privacy regimes, regardless of
+which column it sits in. The bundle does **not** scan free text for embedded subject identifiers, so consumers face a
+coarse choice:
+
+- Annotate the whole free-text column with `#[Anonymize(strategy: Strategy::Redact)]` or `Strategy::NullValue` — safe,
+  but destroys the entire note (over-removal).
+- Leave it unannotated — under-removal; document the residual risk and handle it out-of-band (manual review, a
+  host-app-specific cleanup task, …).
+
+A finer-grained strategy that scans free text for the subject's known identifiers at scrub time and rewrites only those
+substrings is not currently shipped — host apps that need it have to implement it themselves.
 
 ## Configuration
 
