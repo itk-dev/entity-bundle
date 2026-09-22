@@ -32,4 +32,15 @@ jobs:
 
       - run: |
           docker compose run --rm phpfpm composer install
+
+      # phpstan.neon.dist analyses against the test container XML, which only exists as a side
+      # effect of booting the test kernel. phpstan-symfony hashes that file when it builds its
+      # result-cache metadata — before PHPStan runs `bootstrapFiles` — so the bundled bootstrap
+      # cannot be what creates it. Boot the kernel here instead, or the job fails on every cold
+      # checkout with "Container ... does not exist".
+      - name: Generate the test container PHPStan analyses against
+        run: |
+          docker compose run --rm phpfpm php phpstan-bootstrap.php
+
+      - run: |
           docker compose run --rm phpfpm vendor/bin/phpstan analyse --no-progress

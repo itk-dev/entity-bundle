@@ -67,6 +67,9 @@ tasks:
   lint:phpstan:
     desc: Static analysis (phpstan, level 8)
     cmds:
+      # PHPStan analyses against the test container XML, which is written when the test kernel
+      # boots. Generate it first — phpstan-symfony needs it before it runs `bootstrapFiles`.
+      - '{{.COMPOSE}} run --rm phpfpm php phpstan-bootstrap.php'
       - '{{.COMPOSE}} run --rm phpfpm vendor/bin/phpstan analyse --no-progress'
 
   lint:composer:

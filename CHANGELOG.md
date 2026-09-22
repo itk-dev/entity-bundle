@@ -21,7 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-Both of these were surfaced by the new lower-bound CI leg.
+The first two were surfaced by the new lower-bound CI leg; all three are pre-existing and also
+affect `develop`.
 
 - Declared `symfony/doctrine-bridge` (`^7.4 || ^8.0`) as a direct requirement. The bundle imports
   `Symfony\Bridge\Doctrine\Types\UlidType` in `SubjectAnonymizer` but never required the package,
@@ -33,6 +34,11 @@ Both of these were surfaced by the new lower-bound CI leg.
   loose: with auditor core 3.2 the bundle passes `viewer` as an array where core still expects a
   bool, so the Doctrine provider fails to construct. (Under auditor 4 those provider classes come
   from `damienharper/auditor-doctrine-provider`, which auditor-bundle 7 pulls in itself.)
+- The PHPStan workflow never generated the test container it analyses against, so the job failed
+  on any cold checkout with `Container ... KernelTestDebugContainer.xml does not exist`. That file
+  is written when the test kernel boots, and phpstan-symfony hashes it *before* PHPStan executes
+  `bootstrapFiles` — so the bundled `phpstan-bootstrap.php` could never be what created it. The
+  workflow and `task lint:phpstan` now boot the kernel as an explicit step first.
 
 ### Upgrading
 
