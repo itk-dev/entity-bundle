@@ -8,6 +8,17 @@ use DH\Auditor\Provider\Doctrine\Configuration as DoctrineAuditConfiguration;
 use DH\Auditor\Provider\Doctrine\DoctrineProvider;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * Scrubs PII out of dh_auditor's storage tables.
+ *
+ * The audit rows are reached with raw DBAL rather than through the auditor's Entry model, because
+ * the Entry model is read-only. That couples this class to dh_auditor's storage schema — it depends
+ * on the columns `id`, `object_id`, `diffs`, `created_at`, `blame_id`, `blame_user`,
+ * `blame_user_fqdn`, `blame_user_firewall` and `ip`. That set is stable across auditor 3 and 4
+ * (auditor 4 only adds a nullable `extra_data` column), but `auditor-doctrine-provider`'s main
+ * branch is collapsing the `blame_*` and `ip` columns into a single JSON `blame` column. If that
+ * ships, the UPDATE statements below need rewriting — the auditor-7 CI leg is what will catch it.
+ */
 final readonly class AuditScrubber
 {
     public function __construct(

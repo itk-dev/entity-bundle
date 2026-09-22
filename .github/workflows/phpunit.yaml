@@ -23,16 +23,29 @@ on:
 
 jobs:
   phpunit:
-    name: PHPUnit (${{ matrix.database }})
+    name: PHPUnit (${{ matrix.database }}, auditor ${{ matrix.auditor }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # `damienharper/auditor-bundle` is allowed as `^6.3 || ^7.2`, so both ends of that range
+      # need exercising. No composer.lock is committed, so the default resolution is the highest
+      # allowed set (auditor 7 on Symfony 8); `--prefer-lowest` pins the other end (auditor 6 on
+      # Symfony 7.4). The auditor axis is deliberately not crossed with every database — auditor 6
+      # runs on MariaDB only, to keep the matrix small.
       matrix:
         include:
           - database: mariadb
+            auditor: "7"
             compose-files: "-f docker-compose.yml"
+            composer-args: ""
           - database: postgres
+            auditor: "7"
             compose-files: "-f docker-compose.yml -f docker-compose.postgres.yml"
+            composer-args: ""
+          - database: mariadb
+            auditor: "6 (lowest)"
+            compose-files: "-f docker-compose.yml"
+            composer-args: "--prefer-lowest --prefer-stable"
     steps:
       - uses: actions/checkout@v6
 
@@ -40,7 +53,15 @@ jobs:
         run: docker network create frontend
 
       - name: Install dependencies
-        run: docker compose ${{ matrix.compose-files }} run --rm phpfpm composer install
+        run: docker compose ${{ matrix.compose-files }} run --rm phpfpm composer update ${{ matrix.composer-args }}
+
+      # Makes each leg's actual resolution visible in the log, so "which auditor major did this
+      # job run?" is a glance rather than an investigation.
+      - name: Show resolved dependency versions
+        run: |
+          docker compose ${{ matrix.compose-files }} run --rm phpfpm composer show "damienharper/*"
+          docker compose ${{ matrix.compose-files }} run --rm phpfpm composer show "doctrine/*"
+          docker compose ${{ matrix.compose-files }} run --rm phpfpm composer show symfony/framework-bundle
 
       - name: Run PHPUnit with coverage
         run: docker compose ${{ matrix.compose-files }} run -e XDEBUG_MODE=coverage --rm phpfpm vendor/bin/phpunit --coverage-clover=coverage/clover.xml

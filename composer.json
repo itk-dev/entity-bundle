@@ -5,10 +5,12 @@
     "type": "symfony-bundle",
     "require": {
         "php": ">=8.4",
-        "damienharper/auditor-bundle": "^6.3",
+        "damienharper/auditor": "^3.4 || ^4.0",
+        "damienharper/auditor-bundle": "^6.3 || ^7.2",
         "doctrine/doctrine-bundle": "^2.13 || ^3.0",
         "doctrine/orm": "^3.0",
         "symfony/clock": "^7.4 || ^8.0",
+        "symfony/doctrine-bridge": "^7.4 || ^8.0",
         "symfony/finder": "^7.4 || ^8.0",
         "symfony/framework-bundle": "^7.4 || ^8.0",
         "symfony/security-bundle": "^7.4 || ^8.0",

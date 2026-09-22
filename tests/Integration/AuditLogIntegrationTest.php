@@ -49,8 +49,8 @@ final class AuditLogIntegrationTest extends IntegrationTestCase
             ->execute();
 
         self::assertCount(1, $audits);
-        self::assertSame('insert', $audits[0]->getType());
-        self::assertSame((string) $entity->getId(), $audits[0]->getObjectId());
+        self::assertSame('insert', self::entryField($audits[0], 'type'));
+        self::assertSame((string) $entity->getId(), self::entryField($audits[0], 'objectId'));
     }
 
     public function testUpdateRecordsAuditRowWithDiff(): void
@@ -69,7 +69,7 @@ final class AuditLogIntegrationTest extends IntegrationTestCase
 
         self::assertCount(2, $audits);
         // Reader returns newest first
-        self::assertSame('update', $audits[0]->getType());
+        self::assertSame('update', self::entryField($audits[0], 'type'));
         $diffs = $audits[0]->getDiffs();
         self::assertArrayHasKey('label', $diffs);
         self::assertSame('before', $diffs['label']['old']);
@@ -91,7 +91,7 @@ final class AuditLogIntegrationTest extends IntegrationTestCase
 
         self::assertCount(2, $audits);
         // soft delete is recorded as an update (deletedAt: null -> timestamp), not as a remove
-        self::assertSame('update', $audits[0]->getType());
+        self::assertSame('update', self::entryField($audits[0], 'type'));
         $diffs = $audits[0]->getDiffs();
         self::assertArrayHasKey('deletedAt', $diffs);
         self::assertNotNull($diffs['deletedAt']['new']);
@@ -115,6 +115,20 @@ final class AuditLogIntegrationTest extends IntegrationTestCase
             ->execute();
 
         self::assertCount(1, $audits);
-        self::assertSame((string) $alice->getId(), $audits[0]->getUserId());
+        self::assertSame((string) $alice->getId(), self::entryField($audits[0], 'userId'));
+    }
+
+    /**
+     * Read a field off an auditor Entry across both supported auditor majors.
+     *
+     * auditor 3 exposes these fields as getters; auditor 4 replaced them with PHP 8.4 property
+     * hooks and dropped the getters. `getDiffs()` is the exception — it survived as a method on
+     * both, so call sites for that one are left alone.
+     */
+    private static function entryField(object $entry, string $field): mixed
+    {
+        $getter = 'get'.ucfirst($field);
+
+        return method_exists($entry, $getter) ? $entry->{$getter}() : $entry->{$field};
     }
 }

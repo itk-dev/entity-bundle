@@ -7,6 +7,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Widened the `damienharper/auditor-bundle` requirement from `^6.3` to `^6.3 || ^7.2`, so consumers
+  can move to auditor-bundle 7 / auditor 4 without waiting on this bundle. Symfony 7.4 apps keep
+  resolving auditor 6; Symfony 8 apps resolve auditor 7. Nothing in the bundle's own API changes.
+- `.github/workflows/phpunit.yaml` now varies the auditor major as well as the database: auditor 7
+  (highest resolution) on MariaDB and PostgreSQL, plus auditor 6 (`--prefer-lowest`, which also
+  pins Symfony 7.4) on MariaDB.
+- `AuditLogIntegrationTest` reads auditor `Entry` fields through a small version-agnostic helper —
+  auditor 4 dropped the `getType()` / `getObjectId()` / `getUserId()` getters in favour of PHP 8.4
+  property hooks.
+
+### Fixed
+
+Both of these were surfaced by the new lower-bound CI leg.
+
+- Declared `symfony/doctrine-bridge` (`^7.4 || ^8.0`) as a direct requirement. The bundle imports
+  `Symfony\Bridge\Doctrine\Types\UlidType` in `SubjectAnonymizer` but never required the package,
+  so its floor was set only by transitive constraints — which allowed a 6.4 bridge to be installed
+  alongside Symfony 7.4 http-kernel, a combination that fatals on a `WarmableInterface::warmUp()`
+  signature mismatch.
+- Declared `damienharper/auditor` (`^3.4 || ^4.0`) as a direct requirement. The bundle imports
+  `DH\Auditor\Provider\Doctrine\*` directly, and auditor-bundle 6.3's own `^3.2` constraint is too
+  loose: with auditor core 3.2 the bundle passes `viewer` as an array where core still expects a
+  bool, so the Doctrine provider fails to construct. (Under auditor 4 those provider classes come
+  from `damienharper/auditor-doctrine-provider`, which auditor-bundle 7 pulls in itself.)
+
+### Upgrading
+
+- Host apps moving from auditor 6 to auditor 7 must run `bin/console audit:schema:update --force`
+  once: auditor 4 adds a nullable JSON `extra_data` column to every audit table, which existing
+  databases will not have. See "Upgrading to auditor-bundle 7" in `README.md`.
+
 ## [0.1.1] - 2026-06-15
 
 - Cleaned up README.
