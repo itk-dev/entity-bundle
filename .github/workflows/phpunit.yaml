@@ -27,11 +27,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      # `damienharper/auditor-bundle` is allowed as `^6.3 || ^7.2`, so both ends of that range
-      # need exercising. No composer.lock is committed, so the default resolution is the highest
-      # allowed set (auditor 7 on Symfony 8); `--prefer-lowest` pins the other end (auditor 6 on
-      # Symfony 7.4). The auditor axis is deliberately not crossed with every database — auditor 6
-      # runs on MariaDB only, to keep the matrix small.
+      # `damienharper/auditor-bundle` is allowed as `^6.3 || ^7.2`, so both ends of that range need
+      # exercising. No composer.lock is committed, so the default resolution is the highest allowed
+      # set (auditor 7 on Symfony 8).
+      #
+      # The lower leg uses `--prefer-lowest`, which pins the floor of EVERY dependency, not just
+      # auditor — Symfony 7.4.0, ORM 3.2.0, DBAL 3.8.2 and the dev tools too. That is intentional:
+      # it tests the resolution a Symfony 7.4 consumer actually gets, and it is what caught the
+      # undeclared `symfony/doctrine-bridge` and auditor-bundle 6.3's too-loose `auditor: ^3.2`
+      # constraint. The trade-off is that a red lower leg is ambiguous (auditor problem, or some
+      # other floor?) and brittle against any floor in the tree; when that happens, raise the
+      # offending floor in composer.json rather than weakening the leg.
+      #
+      # The auditor axis is deliberately not crossed with every database — auditor 6 runs on
+      # MariaDB only, to keep the matrix small.
       matrix:
         include:
           - database: mariadb
@@ -42,8 +51,10 @@ jobs:
             auditor: "7"
             compose-files: "-f docker-compose.yml -f docker-compose.postgres.yml"
             composer-args: ""
+          # Rendered job name is "PHPUnit (mariadb, auditor 6-lowest)" — kept free of nested
+          # parentheses so it is easy to type into branch-protection required-check config.
           - database: mariadb
-            auditor: "6 (lowest)"
+            auditor: "6-lowest"
             compose-files: "-f docker-compose.yml"
             composer-args: "--prefer-lowest --prefer-stable"
     steps:
@@ -58,10 +69,7 @@ jobs:
       # Makes each leg's actual resolution visible in the log, so "which auditor major did this
       # job run?" is a glance rather than an investigation.
       - name: Show resolved dependency versions
-        run: |
-          docker compose ${{ matrix.compose-files }} run --rm phpfpm composer show "damienharper/*"
-          docker compose ${{ matrix.compose-files }} run --rm phpfpm composer show "doctrine/*"
-          docker compose ${{ matrix.compose-files }} run --rm phpfpm composer show symfony/framework-bundle
+        run: docker compose ${{ matrix.compose-files }} run --rm phpfpm sh -c 'composer show "damienharper/*"; composer show "doctrine/*"; composer show symfony/framework-bundle'
 
       - name: Run PHPUnit with coverage
         run: docker compose ${{ matrix.compose-files }} run -e XDEBUG_MODE=coverage --rm phpfpm vendor/bin/phpunit --coverage-clover=coverage/clover.xml

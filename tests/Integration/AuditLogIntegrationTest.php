@@ -128,7 +128,16 @@ final class AuditLogIntegrationTest extends IntegrationTestCase
     private static function entryField(object $entry, string $field): mixed
     {
         $getter = 'get'.ucfirst($field);
+        if (method_exists($entry, $getter)) {
+            return $entry->{$getter}();
+        }
 
-        return method_exists($entry, $getter) ? $entry->{$getter}() : $entry->{$field};
+        // Fail loudly if a future major renames the field, rather than letting it surface as an
+        // undefined-property warning from somewhere further down the assertion.
+        if (!property_exists($entry, $field)) {
+            throw new \LogicException(sprintf('Auditor Entry exposes neither %s() nor $%s.', $getter, $field));
+        }
+
+        return $entry->{$field};
     }
 }

@@ -16,6 +16,12 @@ DoctrineBundle **^3.0**, so a Symfony 7.4 app resolves auditor-bundle 6.3 and a 
 resolves 7.2. See [Upgrading to auditor-bundle 7](#upgrading-to-auditor-bundle-7) if you are moving
 an existing install across that boundary.
 
+The bundle uses `DH\Auditor\Provider\Doctrine\*` directly. Those classes ship in
+`damienharper/auditor` under auditor 3 but in `damienharper/auditor-doctrine-provider` under
+auditor 4. The provider package is intentionally not a declared requirement — it requires
+`damienharper/auditor: ^4.0`, so requiring it would force auditor 4 on every consumer — and
+auditor-bundle 7.x pulls it in instead.
+
 ## Installation
 
 The bundle is not published on Packagist. Add it to a Symfony project as a Composer VCS repository:

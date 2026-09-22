@@ -12,6 +12,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Widened the `damienharper/auditor-bundle` requirement from `^6.3` to `^6.3 || ^7.2`, so consumers
   can move to auditor-bundle 7 / auditor 4 without waiting on this bundle. Symfony 7.4 apps keep
   resolving auditor 6; Symfony 8 apps resolve auditor 7. Nothing in the bundle's own API changes.
+  The upper floor is `^7.2` rather than `^7.0` because that is what issue #2 proposed, what was
+  verified upstream against a Symfony 8.1 consumer, and the only 7.x resolution this bundle's CI
+  exercises; auditor-bundle also only took `damienharper/auditor-doctrine-provider` as a direct
+  dependency from 7.1 onward. 7.0 and 7.1 are untested here, not known-broken.
+  **Upgrading:** a host app moving an existing database from auditor 6 to auditor 7 must run
+  `bin/console audit:schema:update --force` once — auditor 4 adds a nullable JSON `extra_data`
+  column to every audit table, which fresh installs get from the schema listener but existing
+  databases do not. See "Upgrading to auditor-bundle 7" in `README.md`.
 - `.github/workflows/phpunit.yaml` now varies the auditor major as well as the database: auditor 7
   (highest resolution) on MariaDB and PostgreSQL, plus auditor 6 (`--prefer-lowest`, which also
   pins Symfony 7.4) on MariaDB.
@@ -32,19 +40,17 @@ affect `develop`.
 - Declared `damienharper/auditor` (`^3.4 || ^4.0`) as a direct requirement. The bundle imports
   `DH\Auditor\Provider\Doctrine\*` directly, and auditor-bundle 6.3's own `^3.2` constraint is too
   loose: with auditor core 3.2 the bundle passes `viewer` as an array where core still expects a
-  bool, so the Doctrine provider fails to construct. (Under auditor 4 those provider classes come
-  from `damienharper/auditor-doctrine-provider`, which auditor-bundle 7 pulls in itself.)
+  bool, so the Doctrine provider fails to construct.
+  Note that this does not fully close the gap under auditor 4, where those provider classes live in
+  `damienharper/auditor-doctrine-provider` rather than in core. That package is deliberately left
+  undeclared — it requires `damienharper/auditor: ^4.0`, so requiring it would force auditor 4 on
+  every consumer and break the auditor-6 leg — and is pulled in by auditor-bundle 7.x instead.
+  The constraint is therefore not expressible in Composer; see the note on `AuditScrubber`.
 - The PHPStan workflow never generated the test container it analyses against, so the job failed
   on any cold checkout with `Container ... KernelTestDebugContainer.xml does not exist`. That file
   is written when the test kernel boots, and phpstan-symfony hashes it *before* PHPStan executes
   `bootstrapFiles` — so the bundled `phpstan-bootstrap.php` could never be what created it. The
   workflow and `task lint:phpstan` now boot the kernel as an explicit step first.
-
-### Upgrading
-
-- Host apps moving from auditor 6 to auditor 7 must run `bin/console audit:schema:update --force`
-  once: auditor 4 adds a nullable JSON `extra_data` column to every audit table, which existing
-  databases will not have. See "Upgrading to auditor-bundle 7" in `README.md`.
 
 ## [0.1.1] - 2026-06-15
 
