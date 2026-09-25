@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-25
+
 ### Changed
 
 - Widened the `damienharper/auditor-bundle` requirement from `^6.3` to `^6.3 || ^7.2`, so consumers
