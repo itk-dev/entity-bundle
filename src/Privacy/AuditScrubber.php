@@ -8,6 +8,26 @@ use DH\Auditor\Provider\Doctrine\Configuration as DoctrineAuditConfiguration;
 use DH\Auditor\Provider\Doctrine\DoctrineProvider;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * Scrubs PII out of dh_auditor's storage tables.
+ *
+ * The audit rows are reached with raw DBAL rather than through the auditor's Entry model, because
+ * the Entry model is read-only. That couples this class to dh_auditor's storage schema: it depends
+ * on the columns `id`, `object_id`, `diffs`, `created_at`, `blame_id`, `blame_user`,
+ * `blame_user_fqdn`, `blame_user_firewall` and `ip`. All of those are present in both supported
+ * majors — verified against damienharper/auditor 3.4 and auditor-doctrine-provider 1.2.0, where
+ * auditor 4 only adds a nullable `extra_data` column. A later provider release may fold the
+ * `blame_*` and `ip` columns into a single JSON `blame` column, which would require rewriting the
+ * UPDATE statements below; the auditor-7 CI leg is what will catch that.
+ *
+ * @see https://github.com/DamienHarper/auditor-doctrine-provider
+ *
+ * Note on packaging: DoctrineProvider below comes from damienharper/auditor under auditor 3, but
+ * from damienharper/auditor-doctrine-provider under auditor 4 (same namespace, different package).
+ * That provider package is deliberately NOT a declared requirement — it requires auditor ^4.0, so
+ * requiring it would force auditor 4 on every consumer and break the auditor-6 leg. It is pulled in
+ * by auditor-bundle 7.x instead.
+ */
 final readonly class AuditScrubber
 {
     public function __construct(

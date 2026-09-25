@@ -7,8 +7,20 @@ Cross-cutting entity foundation for Symfony 7.4 / 8.0 and Doctrine ORM 3 project
 - PHP **>= 8.4**
 - Symfony **7.4 or 8.0** (`framework-bundle`, `security-bundle`, `clock`, `finder`, `uid`)
 - Doctrine ORM **^3.0** with `doctrine/doctrine-bundle` **^2.13 or ^3.0**
-- [`damienharper/auditor-bundle`](https://github.com/DamienHarper/auditor-bundle) **^6.3**
+- [`damienharper/auditor-bundle`](https://github.com/DamienHarper/auditor-bundle) **^6.3 or ^7.2**
   (only relevant when `audit.enabled` is on)
+
+Both auditor majors are supported and covered by CI. Which one Composer picks follows your Symfony
+version: auditor-bundle 7 additionally requires Symfony **^8.0**, DBAL **^4.0**, ORM **^3.2** and
+DoctrineBundle **^3.0**, so a Symfony 7.4 app resolves auditor-bundle 6.3 and a Symfony 8 app
+resolves 7.2. See [Upgrading to auditor-bundle 7](#upgrading-to-auditor-bundle-7) if you are moving
+an existing install across that boundary.
+
+The bundle uses `DH\Auditor\Provider\Doctrine\*` directly. Those classes ship in
+`damienharper/auditor` under auditor 3 but in `damienharper/auditor-doctrine-provider` under
+auditor 4. The provider package is intentionally not a declared requirement — it requires
+`damienharper/auditor: ^4.0`, so requiring it would force auditor 4 on every consumer — and
+auditor-bundle 7.x pulls it in instead.
 
 ## Installation
 
@@ -310,6 +322,22 @@ bin/console audit:clean P30D --no-confirm
 `keep` defaults to `P12M` if omitted. Run `bin/console audit:clean --help` for the full option list.
 
 If you also need PII scrubbing on retained audit rows (rather than deletion), see `privacy:anonymize-stale` below.
+
+### Upgrading to auditor-bundle 7
+
+Nothing in this bundle's API changes across the two auditor majors, but auditor 4 (which
+auditor-bundle 7 depends on) adds a nullable JSON `extra_data` column to every audit table. Fresh
+installs get it from the schema listener; **an existing database does not**, so after upgrading run:
+
+```bash
+bin/console audit:schema:update --force
+```
+
+Skipping this leaves audit writes failing against the old table shape. Host-app code that reads
+audit rows through auditor's own `Entry` model also needs updating — auditor 4 replaced its getters
+with PHP 8.4 property hooks (`$entry->getType()` becomes `$entry->type`, and likewise for
+`objectId` / `userId`); `getDiffs()` is unchanged. This bundle's own `AuditScrubber` reads the
+tables with raw SQL and is unaffected.
 
 ## Privacy / anonymization (opt-in)
 
